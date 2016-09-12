@@ -78,7 +78,7 @@ def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
     if verbose:
-        print "Computing Heat Kernel Signature."
+        print "Computing Heat Kernel Signature with %d eigen-pairs." % (len(evals),)
 
     n = evecs.shape[1]  # Number of nodes.
     e = np.e
@@ -115,26 +115,27 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
     return [math.exp(i) for i in logts]
 
 
-def wave_kernel_signature(eigvalues, eigvectors, energies, sigma=1, verbose=False):    
-    assert (len(eigvalues) == eigvectors.shape[0])  #dim(eigvectors) = #eigvectors x dimension of space=#nodes
-    if verbose: print "Computing Wave Kernel Signatures with %d eigenpairs." % (len(eigvalues, )),
-    n = eigvectors.shape[1]  #number of nodes
+def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
+    if len(evals) != evecs.shape[0]:
+        raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
+    if verbose:
+        print "Computing Wave Kernel Signature with %d eigen-pairs." % (len(evals),)
+     
+    n = evecs.shape[1]  # Number of nodes.
     e = math.exp(1)
     log = np.log
     signatures        = np.empty((n, len(energies)))
             
-    squaredEigVectors = eigvectors**2
-    squaredEigVectors = np.transpose(squaredEigVectors)    
-
+    squared_evecs = np.square(evecs)
+    squared_evecs = np.transpose(squared_evecs)
     sigma = 2 * (sigma**2)
-    for t, tp in enumerate(energies):
-        interm = e ** (-1 * ( ( (tp - log(eigvalues))**2) / sigma))
-        normFactor = 1 /np.sum(interm)
+    for t, en in enumerate(energies):
+        interm = e ** (-1 * ( ( (en - log(evals))**2) / sigma))
+        norm_factor = 1 /np.sum(interm)
         for i in xrange (n):
-            signatures[i, t] = np.dot(interm, squaredEigVectors[i]) * normFactor
+            signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
 
     assert(np.alltrue(signatures >= 0))
-
     return signatures
 
 

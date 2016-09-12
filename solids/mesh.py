@@ -23,7 +23,7 @@ from fundamentals.graph import Graph
 l2_norm = utils.l2_norm
 
 
-class Mesh(object):
+class Mesh(object): 
     '''
     A class representing a triangular Mesh of a 3D surface. Provides a variety of relevant functions, including
     loading and plotting utilities.
