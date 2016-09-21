@@ -13,10 +13,10 @@ from scipy.sparse.linalg import eigs
 from math import ceil
 
 
-from utils import linalg_utils as utils
-from utils.linalg_utils import l2_norm
-from solids import mesh_cleaning as cleaning
-from fundamentals.graph import Graph
+from .. utils import linalg_utils as utils
+from .. utils.linalg_utils import l2_norm
+from .. solids import mesh_cleaning as cleaning
+from .. fundamentals.graph import Graph
 
 
 class Laplace_Beltrami(object):

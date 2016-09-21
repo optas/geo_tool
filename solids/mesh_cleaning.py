@@ -9,7 +9,7 @@ import numpy as np
 import warnings
 from collections import defaultdict
 
-import utils.linalg_utils as linalg_utils
+from .. utils import linalg_utils as linalg_utils
 
 
 def filter_vertices(self, keep_list):

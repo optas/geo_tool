@@ -11,11 +11,11 @@ import os.path as osp
 import numpy as np
 import matplotlib.pylab as plt
 
-import nn_io
-from collections import defaultdict
-from geo_tool.rendering.shape_views import Shape_Views
-from geo_tool.rendering.back_tracer import Back_Tracer
-from mesh        import Mesh
+from . collections import defaultdict
+from . shape_views import Shape_Views
+from . back_tracer import Back_Tracer
+from .. in_out import soup as nn_io
+from .. mesh import Mesh
 
 
 class View_Gradients(object):

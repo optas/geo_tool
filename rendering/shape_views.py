@@ -10,7 +10,7 @@ import numpy as np
 import os.path as osp
 import matplotlib.pylab as plt
 
-import nn_io
+from .. in_out import soup as nn_io
 
 
 class Shape_Views():

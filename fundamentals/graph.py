@@ -10,8 +10,7 @@ import numpy as np
 from scipy import sparse as sparse
 from numpy.matlib import repmat
 
-from utils import linalg_utils as lu
-
+from .. utils import linalg_utils as lu
 
 class Graph(object):
     '''
@@ -33,7 +32,7 @@ class Graph(object):
         Marks the nodes that exist in the largest connected components so that [thres] percent of total nodes are covered.
         '''
         if thres <= 0 or thres > 1:
-            raise ValueError('thres must be in (0,1].')        
+            raise ValueError('threshold variable must be in (0,1].')        
                 
         unique_labels, counts = np.unique(node_labels, return_counts=True)
         decreasing_index = [np.argsort(counts)[::-1]]
@@ -55,7 +54,7 @@ class Graph(object):
     
                 weights    - (N x K) weights(i,j) is the weight of the (directed) edge between i to j.
     
-                direction  - (optioal, String) 'in' or 'out'. If 'in' then weights(i,j) correspond to an edge
+                direction  - (optional, String) 'in' or 'out'. If 'in' then weights(i,j) correspond to an edge
                              that points towards i. Otherwise, towards j. Default = 'out'.
     
          Returns:   

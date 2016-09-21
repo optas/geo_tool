@@ -11,7 +11,7 @@ import math
 import scipy.sparse as sparse
 from scipy.sparse.linalg import eigs
 
-import utils.linalg_utils as utils
+from .. utils import linalg_utils as utils
 
 
 def fiedler_of_component_spectra(in_mesh, in_lb, thres):

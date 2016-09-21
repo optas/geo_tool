@@ -14,11 +14,11 @@ from scipy import sparse as sp
 from numpy.matlib import repmat
 from mayavi import mlab as mayalab
 
-import utils.linalg_utils as utils
-import solids.mesh_cleaning as cleaning
-from utils.linalg_utils import accumarray
-from in_out import soup as io
-from fundamentals.graph import Graph
+import mesh_cleaning as cleaning
+from .. utils import linalg_utils as utils
+from .. utils.linalg_utils import accumarray
+from .. in_out import soup as io
+from .. fundamentals.graph import Graph
 
 l2_norm = utils.l2_norm
 
