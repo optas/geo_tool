@@ -22,7 +22,7 @@ class Back_Tracer():
     of the Mesh models.
     '''
 
-    fythumb_bin = '/home/panos/Renderer/a/b/fythumb_mvcnn/build/fythumb'
+    fythumb_bin = '/Users/optas/Documents/Eclipse_Projects/3d/thumb3d/build/thumb3d'
 
     def __init__(self, triangle_folder, in_mesh):
         '''
