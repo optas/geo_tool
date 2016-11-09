@@ -27,10 +27,14 @@ def fiedler_of_component_spectra(in_mesh, in_lb, thres):
 
 
 def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_horizon, min_nodes=None, min_eigs=None, max_eigs=None):
+    
     spectra, multi_cc = in_lb.multi_component_spectra(in_mesh, area_type, percent_of_eigs,
                                                       min_nodes=min_nodes, min_eigs=min_eigs, max_eigs=max_eigs)
     n_cc = len(multi_cc)
+    
+    hks_signature = np.zeros((in_mesh.num_vertices, time_horizon))
     aggregate_color = np.zeros((in_mesh.num_vertices, 1))
+
     for i in xrange(n_cc):
         nodes = multi_cc[i]
         if spectra[i]:
@@ -49,12 +53,12 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
                 evals = evals[index] + 1        # Add 1 to make the division on time_samples strictly decreasing
                 ts = hks_time_sample_generator(evals[0], evals[-1], time_horizon)
                 sig = heat_kernel_signature(evals, evecs, ts)
-                sig = sig / utils.l2_norm(sig, axis=0)
-                sig = np.sum(sig, 1)
-                magic_color = utils.scale(sig)
+                sig = sig / utils.l2_norm(sig, axis=0)                
+                hks_signature[nodes,:] = sig 
+                magic_color = utils.scale(np.sum(sig, 1))
                 aggregate_color[nodes] = magic_color.reshape(len(nodes), 1)
 
-    return aggregate_color[:, 0]
+    return aggregate_color[:, 0], hks_signature
 
 
 def gaussian_curvature(in_mesh):
