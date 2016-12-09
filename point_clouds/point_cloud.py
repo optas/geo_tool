@@ -1,5 +1,5 @@
 '''
-Created on Jul 18, 2016
+Created on Dec 8, 2016
 
 @author: Panos Achlioptas
 @contact: pachlioptas @ gmail.com
@@ -22,11 +22,10 @@ from .. fundamentals.graph import Graph
 
 l2_norm = utils.l2_norm
 
-
-class Mesh(object): 
+ 
+class Point_Cloud(object): 
     '''
-    A class representing a triangular Mesh of a 3D surface. Provides a variety of relevant functions, including
-    loading and plotting utilities.
+    A class representing a a 3D Point Cloud.
     '''
     def __init__(self, vertices=None, triangles=None, off_file=None):
         '''
