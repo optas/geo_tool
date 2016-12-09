@@ -40,7 +40,7 @@ class Graph(object):
         unique_labels = unique_labels[decreasing_index]
         cumulative  = np.cumsum(counts, dtype=np.float32) 
         cumulative /= cumulative[-1] 
-        n_cc        = max(1, np.sum(cumulative <= thres))        
+        n_cc = max(1, np.sum(cumulative <= thres))        
         cc_marked_list = [np.where(node_labels == unique_labels[i])[0] for i in range(n_cc)]
         assert(any([len(x)<=0 for x in cc_marked_list]) == False)
         return cc_marked_list 
@@ -119,8 +119,7 @@ class Graph(object):
 if __name__ == '__main__':
     from geo_tool.solids import mesh_cleaning as cleaning
     from geo_tool.solids.mesh import Mesh
-    
-    
+        
     off_file = '/Users/t_achlp/Documents/DATA/ModelNet10/OFF_Original/bathtub/train/bathtub_0001.off'
     in_mesh = Mesh(off_file)
     in_mesh.center_in_unit_sphere()

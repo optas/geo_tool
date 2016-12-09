@@ -11,7 +11,6 @@ from collections import defaultdict
 
 from .. utils import linalg_utils as linalg_utils
 
-
 def filter_vertices(self, keep_list):
     '''Filters the mesh to contain only the vertices in the input ``keep_list``. 
     Also, it discards any triangles that do not contain vertices that all belong in the list.
