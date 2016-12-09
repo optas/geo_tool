@@ -8,7 +8,7 @@ Created on December 8, 2016
 
 class Bounding_Box(object):
     '''
-    A class representing a 2D or 3D Bounding_Box.
+    A class representing a 2D or 3D Bounding_Box.    
     '''
 
     def __init__(self, corners):
@@ -48,7 +48,7 @@ class Bounding_Box(object):
         [sxmin, symin, sxmax, symax]  = self.get_corners()
         [oxmin, oymin, oxmax, oymax]  = other.get_corners()
         if self.is_3d():
-            pass
+            pass # TODO Lin Fill Here
         else:                        
             dx = min(sxmax, oxmax) - max(sxin, oxmin)
             dy = min(symax, oymax) - max(symin, oymin)
@@ -69,5 +69,3 @@ class Bounding_Box(object):
         inter = self.intersection_with(other)
         union = self.union_with(other)
         return float(inte) / union 
-    
-     

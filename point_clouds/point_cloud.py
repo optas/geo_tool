@@ -12,13 +12,13 @@ import numpy as np
 
 from .. in_out import soup as io
 from .. fundamentals.bounding_box import Bounding_Box
-
 l2_norm = utils.l2_norm
 
- 
 class Point_Cloud(object): 
     '''
     A class representing a 3D Point Cloud.
+    Dependencies:
+        1. plyfile 0.4: PLY file reader/writer. DOI: https://pypi.python.org/pypi/plyfile
     '''
     def __init__(self, point=None, ply_file=None):
         '''
@@ -56,12 +56,12 @@ class Point_Cloud(object):
         
     def bbox(self):
         xmin = np.min(self.points, axis = 0)
+        xmax = np.max(self.points, axis = 0)        
         ymin = np.min(self.points, axis = 1)
-        zmin = np.max(self.points, axis = 2)
-        xmax = np.max(self.points, axis = 0)
         ymax = np.max(self.points, axis = 1)
+        zmin = np.min(self.points, axis = 2)                
         zmax = np.max(self.points, axis = 2)
-        return Bounding_Box(np.array([xmin, ymin, zmin, xmaz, ymax, zmax]))
+        return Bounding_Box(np.array([xmin, ymin, zmin, xmax, ymax, zmax]))
             
     def center_in_unit_sphere(self):
         radius = 0.5 * self.bbox_diagonal_length()
