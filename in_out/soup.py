@@ -1,8 +1,8 @@
 '''
-Created on Jun 14, 2016
+Created on June 14, 2016
 
-@author:    Panos Achlioptas
-@contact:   pachlioptas@gmail.com
+@author:    Panayotes Achlioptas
+@contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
 
@@ -12,6 +12,8 @@ import os
 import os.path as osp
 import numpy as np
 from glob import glob
+
+from external_tools.python_plyfile.plyfile import PlyData
 
 # TODO Break down in more in_out modules
 
@@ -94,6 +96,17 @@ def format_image_tensor_for_tf(im_tensor, whiten=True):
             new_tensor[ind,:,:] = per_image_whitening(im)            
     return np.expand_dims(new_tensor, 3)             # Add singleton trailing dimension.
 
+
+def load_ply(file_name, with_faces=False):
+    ply_data = PlyData.read(file_name)
+    points = ply_data['vertex']
+    points = np.vstack([points['x'], points['y'], points['z']]).T
+    
+    if with_faces:
+        faces = np.vstack(ply_data['face']['vertex_indices'])
+        return points, faces
+    else:
+        return points
 
 def load_off(file_name):
     _float = np.float32

@@ -6,6 +6,7 @@ Created on December 8, 2016
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
 
+import numpy as np
 from .. utils import linalg_utils as utils
 l2_norm = utils.l2_norm
 
@@ -25,6 +26,8 @@ class Bounding_Box(object):
         self.is_3d = len(self.corners) == 6 
                                            
     def get_corners(self):
+        ''' Syntactic sugar to get the corners property into separate variables.
+        '''
         c = self.corners
         if self.is_2d:
             return c[0], c[1], c[2], c[3]
@@ -32,15 +35,15 @@ class Bounding_Box(object):
             return c[0], c[1], c[2], c[3], c[4], c[5]
         
     def area(self):
-        if not self.is_2d:
+        if self.is_3d:
             raise Error('Bound Box is 3D thus it defines a Volume.')
-        c = self.corners()
+        c = self.corners
         return (c[2] - c[0]) * (c[3] - c[1]) 
         
     def volume(self):
-        if not self.is_2d:
-            raise Error('Bound Box is 3D thus it defines a Volume.')
-        c = self.corners()
+        if self.is_2d:
+            raise ValueError('Bound Box is 2D thus it defines an area.')
+        c = self.corners
         return (c[3] - c[0]) * (c[4] - c[1]) * (c[5] - c[2])
     
     def intersection_with(self, other):        
@@ -57,13 +60,13 @@ class Bounding_Box(object):
             return inter        
         
     def diagonal_lengths(self):
-        '''
-            Returns the length of the longest line possible for which
-            the end points are two points of the Point Cloud. 
+        ''' Returns the length of the diagonals of a bounding box (bbox). If the bbox is 2D
+        one length is returned. If bbox is 3D, the first returned value is the diagonal of the (x-y) 
+        rectangle and the second the diagonal of the (x-y-z) bbox.           
         '''        
         if self.is_3d:
             [xmin, ymin, xmax, ymax, zmin, zmax]  = self.get_corners()
-            two_d_diag = l2_norm([ymin-xmin, ymax-xmax])
+            two_d_diag = l2_norm([xmin-xmax, ymin-ymax])
             three_d_diag = l2_norm([xmin-xmax, ymin-ymax, zmin-zmax])
             return two_d_diag, three_d_diag
         else: 
@@ -81,3 +84,13 @@ class Bounding_Box(object):
         inter = self.intersection_with(other)
         union = self.union_with(other)
         return float(inte) / union 
+    
+    @staticmethod
+    def bounding_box_of_3d_points(points):
+        xmin = np.min(points[:,0])
+        xmax = np.max(points[:,0])        
+        ymin = np.min(points[:,1])
+        ymax = np.max(points[:,1])
+        zmin = np.min(points[:,2])                
+        zmax = np.max(points[:,2])
+        return Bounding_Box(np.array([xmin, ymin, zmin, xmax, ymax, zmax]))

@@ -1,7 +1,7 @@
 '''
 Created on December 8, 2016
 
-@author: Panos Achlioptas and Lin Shao
+@author: Panayotes Achlioptas and Lin Shao
 @contact: pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
@@ -10,12 +10,11 @@ Created on December 8, 2016
 import copy
 import numpy as np
 
-from external_tools.python_plyfile.plyfile import PlyData
-
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils
-from .. fundamentals.bounding_box import Bounding_Box
+from .. fundamentals import Bounding_Box
 
+l2_norm = utils.l2_norm
 
 class Point_Cloud(object): 
     '''
@@ -28,9 +27,7 @@ class Point_Cloud(object):
         Constructor
         '''
         if ply_file != None:            
-            ply_data = PlyData.read(ply_file)
-            points = ply_data['vertex']
-            self.points = np.vstack([points['x'], points['y'], points['z']]).T        
+            self.points = io.load_ply(ply_file)         
         else:
             self.point = points 
                         
@@ -48,19 +45,20 @@ class Point_Cloud(object):
 
     def copy(self):
         return copy.deepcopy(self)
-
+    
     def bounding_box(self):
-        xmin = np.min(self.points[:,0])
-        xmax = np.max(self.points[:,0])        
-        ymin = np.min(self.points[:,1])
-        ymax = np.max(self.points[:,1])
-        zmin = np.min(self.points[:,2])                
-        zmax = np.max(self.points[:,2])
-        return Bounding_Box(np.array([xmin, ymin, zmin, xmax, ymax, zmax]))
-            
+        return Bounding_Box.bounding_box_of_3d_points(self.points)
+    
     def center_in_unit_sphere(self):
-        radius = 0.5 * self.bbox_diagonal_length()
-        self.points /= radius
-        barycenter = np.sum(self.points, axis=0) / self.num_points
-        self.points -= barycenter
+        self.points = Point_Cloud.center_in_unit_sphere(self.points)
         return self
+    
+            
+    @staticmethod
+    def center_points_in_unit_sphere(points):
+        n_points = points.shape[0]
+        barycenter = np.sum(points, axis=0) / n_points
+        points -= barycenter   # Center it in the origin.
+        max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
+        points /= max_dist
+        return points

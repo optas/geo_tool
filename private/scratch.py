@@ -2,7 +2,7 @@
 Created on June 14, 2016.
 Dirty scripts checking geo_tool functionality 
 
-@author:    Panos Achlioptas
+@author:    Panayotes Achlioptas
 @contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any
             way you want for non-commercial purposes. 

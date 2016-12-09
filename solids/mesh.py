@@ -1,7 +1,7 @@
 '''
 Created on July 18, 2016
 
-@author: Panos Achlioptas
+@author: Panayotes Achlioptas
 @contact: pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
@@ -18,7 +18,8 @@ import mesh_cleaning as cleaning
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
 from .. in_out import soup as io
-from .. fundamentals.graph import Graph
+from .. fundamentals import Graph, Bounding_Box
+from .. point_clouds import Point_Cloud
 
 l2_norm = utils.l2_norm
 
@@ -111,15 +112,8 @@ class Mesh(object):
         return sp.csr_matrix((vals, (E[:, 0], E[:, 1])), shape=(self.num_vertices, self.num_vertices))
 
     def connected_components(self):
-        return Graph.connected_components(self.adjacency_matrix())
-
-    def bbox_diagonal_length(self):
-        '''
-            Returns the length of the longest line possible for which
-            the end points are two vertices of the mesh.
-        '''
-        return l2_norm(np.min(self.vertices, axis=0) - np.max(self.vertices, axis=0))
-
+        return Graph.connected_components(self.adjacency_matrix())    
+    
     def barycenter_of_triangles(self):
         tr_in_xyz = self.vertices[self.triangles]
         return np.sum(tr_in_xyz, axis=1) / 3.0
@@ -252,13 +246,13 @@ class Mesh(object):
 
         return normals
 
+    def bounding_box(self):
+        return Bounding_Box.bounding_box_of_3d_points(self.vertices)
+    
     def center_in_unit_sphere(self):
-        radius = 0.5 * self.bbox_diagonal_length()
-        self.vertices /= radius
-        barycenter = np.sum(self.vertices, axis=0) / self.num_vertices
-        self.vertices -= barycenter
+        self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
         return self
-
+    
     def sample_faces(self, n_samples):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
