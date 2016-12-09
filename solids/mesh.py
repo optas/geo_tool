@@ -1,5 +1,5 @@
 '''
-Created on Jul 18, 2016
+Created on July 18, 2016
 
 @author: Panos Achlioptas
 @contact: pachlioptas @ gmail.com
