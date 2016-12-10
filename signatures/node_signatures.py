@@ -33,7 +33,7 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
     n_cc = len(multi_cc)
     
     hks_signature = np.zeros((in_mesh.num_vertices, time_horizon))
-    aggregate_color = np.zeros((in_mesh.num_vertices, 1))
+    aggregate_color = np.zeros((in_mesh.num_vertices, ))
 
     for i in xrange(n_cc):
         nodes = multi_cc[i]
@@ -58,7 +58,7 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
                 magic_color = utils.scale(np.sum(sig, 1))
                 aggregate_color[nodes] = magic_color.reshape(len(nodes), 1)
 
-    return aggregate_color[:, 0], hks_signature
+    return aggregate_color, hks_signature
 
 
 def gaussian_curvature(in_mesh):

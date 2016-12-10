@@ -319,33 +319,3 @@ class Mesh(object):
             row_norms = l2_norm(N, axis=1)
             N = (N.T / row_norms).T
         return N
-
-
-if __name__ == '__main__':
-    from laplacians.laplace_beltrami import Laplace_Beltrami
-#     from scripts.plot_helper import plot_3d_point_cloud
-
-    off_file = '/Users/optas/Documents/DATA/Model_Net_10/OFF_Original/bathtub/train/bathtub_0001.off'
-    in_mesh = Mesh(off_file)
-    in_mesh.center_in_unit_sphere()
-    cleaning.clean_mesh(in_mesh, level=3, verbose=False)
-    n_cc, node_labels = in_mesh.connected_components()
-    parts_id = Graph.largest_connected_components_at_thres(node_labels, 1)
-
-    percent_of_eigs = 0.15
-    max_eigs = 500
-    time_horizon = 100
-    min_vertices = 0
-
-    in_lb = Laplace_Beltrami(in_mesh)
-    in_mesh.color_via_hks_of_component_spectra(in_lb, percent_of_eigs, time_horizon, min_vertices, max_eigs=100)
-
-    for part_nodes in parts_id[1000:]:
-        temp_mesh = in_mesh.copy()
-        cleaning.filter_vertices(temp_mesh, part_nodes)
-        cleaning.clean_mesh(temp_mesh, level=3, verbose=False)
-        temp_lb = Laplace_Beltrami(temp_mesh)
-        v_color = temp_mesh.color_via_hks_of_component_spectra(temp_lb, percent_of_eigs, time_horizon, min_vertices, max_eigs)
-#         point_cloud = temp_mesh.sample_faces(2000)
-#         plot_3d_point_cloud(point_cloud[:,0], point_cloud[:,1], point_cloud[:,2], s=0.01)
-#         temp_mesh.plot()

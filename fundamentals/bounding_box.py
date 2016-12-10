@@ -70,8 +70,10 @@ class Bounding_Box(object):
             three_d_diag = l2_norm([xmin-xmax, ymin-ymax, zmin-zmax])
             return two_d_diag, three_d_diag
         else: 
-            pass
-    
+            [xmin, ymin, xmax, ymax]  = self.get_corners()
+            two_d_diag = l2_norm([xmin-xmax, ymin-ymax])            
+            return two_d_diag
+        
     def union_with(self, other):
         if self.is_3d:
             sv = self.volume()
