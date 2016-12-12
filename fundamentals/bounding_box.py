@@ -48,7 +48,6 @@ class Bounding_Box(object):
     
     def intersection_with(self, other):        
         if self.is_3d:
-            pass # TODO Lin Fill Here
 	    [sxmin,symin,szmin,sxmax,symax,szmax] = self.get_corners()
 	    [oxmin,oymin,ozmin,oxmax,oymax,ozmax] = other.get_corners()
 	    dx = min(sxmax,oxmax) - max(sxmin,oxmin)
