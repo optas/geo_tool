@@ -11,6 +11,7 @@ Dirty scripts checking geo_tool functionality
 import sys
 import numpy as np
 import os.path as osp
+
 from scipy import spatial
  
  
@@ -53,13 +54,19 @@ def main_Mesh():
     in_mesh.plot(vertex_function=v_color)
 
 
+def main_Point_Cloud_Saliency():
+    ply_file = '/Users/optas/Documents/Git_Repos/autopredictors/point_cloud_saliency/test_data/dragon_heavily_sub_sampled.ply'
+    from autopredictors import point_cloud_saliency
+    
+    
+
 def main_Point_Cloud():
     ply_file = '/Users/optas/Documents/Git_Repos/autopredictors/point_cloud_saliency/test_data/airplane.ply'
     cloud = Point_Cloud(ply_file=ply_file)
     print cloud
 
 
-
 if __name__ == '__main__':
-    main_Mesh()
-    main_Point_Cloud()
+#     main_Mesh()
+#     main_Point_Cloud()
+    main_Point_Cloud_Saliency()
