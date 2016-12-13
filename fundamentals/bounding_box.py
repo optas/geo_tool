@@ -97,6 +97,11 @@ class Bounding_Box(object):
         return float(inte) / union 
     
     def overlap_ratio_with(self, other, ratio_type='union'):
+        '''
+        Returns the overlap ratio between two bounding boxes. That is the ratio of their (area or volume) intersection
+        and their overlap. If the ratio_type is 'union' then the overlap is their (area/volume) of their union. If it is min, it 
+        the min area/volume between them.  
+        '''
         inter = self.intersection_with(other)
         if ratio_type == 'union':
             union = self.union_with(other)
