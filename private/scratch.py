@@ -54,7 +54,7 @@ def main_Mesh():
 
 
 def main_Point_Cloud():
-    ply_file = '/Users/optas/Documents/Git_Repos/point_cloud_saliency/test_data/airplane.ply'
+    ply_file = '/Users/optas/Documents/Git_Repos/autopredictors/point_cloud_saliency/test_data/airplane.ply'
     cloud = Point_Cloud(ply_file=ply_file)
     print cloud
 

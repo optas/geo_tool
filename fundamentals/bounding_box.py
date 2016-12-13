@@ -48,15 +48,18 @@ class Bounding_Box(object):
     
     def intersection_with(self, other):        
         if self.is_3d:
-	    [sxmin,symin,szmin,sxmax,symax,szmax] = self.get_corners()
-	    [oxmin,oymin,ozmin,oxmax,oymax,ozmax] = other.get_corners()
-	    dx = min(sxmax,oxmax) - max(sxmin,oxmin)
-	    dy = min(symax,oymax) - max(symin,oymin)
-	    dz = min(szmax,ozmax) - max(szmin,ozmin)
-	    inter = 0
-	    if (dx > 0) and (dy > 0 ) and (dz > 0):
-		inter = dx * dy * dz	
-	    return inter
+            [sxmin, symin, szmin, sxmax, symax, szmax] = self.get_corners()
+            [oxmin, oymin, ozmin, oxmax, oymax, ozmax] = other.get_corners()
+            dx = min(sxmax, oxmax) - max(sxmin, oxmin)
+            dy = min(symax, oymax) - max(symin, oymin)
+            dz = min(szmax, ozmax) - max(szmin, ozmin)
+            inter = 0
+	    
+            if (dx > 0) and (dy > 0 ) and (dz > 0):                
+                inter = dx * dy * dz
+            
+            return inter
+                	
         else:                        
             [sxmin, symin, sxmax, symax]  = self.get_corners()
             [oxmin, oymin, oxmax, oymax]  = other.get_corners()
@@ -84,16 +87,27 @@ class Bounding_Box(object):
         
     def union_with(self, other):
         if self.is_3d:
-            sv = self.volume()
-            ov = other.volume()
-            return sv  + ov - self.intersection_with(other)            
+            return self.volume()  + other.volume() - self.intersection_with(other)            
         else:
-            pass
+            return self.area() + other.area() - self.intersection_with(other)
     
     def iou_with(self, other):
         inter = self.intersection_with(other)
         union = self.union_with(other)
         return float(inte) / union 
+    
+    def overlap_ratio_with(self, other, ratio_type='union'):
+        inter = self.intersection_with(other)
+        if ratio_type == 'union':
+            union = self.union_with(other)
+            return float(inte) / union
+        elif ratio_type == 'min':
+            if self.is_2d:
+                return float(inte) / min(self.area(),  other.area())
+            else:
+                return float(inte) / min(self.volume(),  other.volume())
+        else:
+            ValueError('ratio_type must be either \'union\', or \'min\'.')
     
     @staticmethod
     def bounding_box_of_3d_points(points):
