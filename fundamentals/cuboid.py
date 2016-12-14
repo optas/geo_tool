@@ -73,10 +73,29 @@ class Cuboid(object):
         zmax_f = corners[corners[:,2] == zmax, :]
         return [xmin_f, xmax_f, ymin_f, ymax_f, zmin_f, zmax_f]
                  
-    def containing_sector(self, sector_corner_point):
-        #TODO Lin
-        pass
-                                                            
+    def containing_sector(self, sector_center, ignore_z_axis=True):
+        # TODO - break into multiple move to Point Clouds
+        # TODO - check that it is feasible
+        def angle_of_sector(sector_center, x1, y1, x2, y2):
+            line_1 = np.array([x1 - sector_center[0], y1 - sector_center[1]])  # First diagonal pair of points of cuboid   
+            line_2 = np.array([x2 - sector_center[0], y2 - sector_center[1]])
+            ns1 = np.square(l2_norm(line_1))
+            ns2 = np.square(l2_norm(line_2))        
+            ns3 = np.square(l2_norm(np.array([x1-y1, x2-y2]) ))            
+            cos1 = (ns1 + ns2 - ns3) / 2 * line_1.dot(line_2)
+            a1 = np.arccos(cos1)
+            assert(a1<=180 and a1>=0)
+            return a1        
+        
+        if ignore_z_axis:
+            [xmin, ymin, _, xmax, ymax, _] = self.extrema
+            a1 = angle_of_sector(sector_center, xmin, ymin, xmax, ymax)
+            a2 = angle_of_sector(sector_center, xmax, ymin, xmin, ymax)
+            if a1>= a2:
+                return np.array([xmin, ymin]), np.array([xmax, ymax])
+            else:
+                return np.array([xmax, ymin]), np.array([xmin, ymax])
+                                                           
     def union_with(self, other):
         return self.volume()  + other.volume() - self.intersection_with(other)            
             

@@ -60,14 +60,18 @@ class Point_Cloud(object):
         y = self.points[:,1]
         z = self.points[:,2]
         Point_Cloud.plot_3d_point_cloud(x, y, z, *args, **kwargs)
-            
+    
+    def barycenter(self):
+        n_points = self.points.shape[0]
+        return np.sum(self.points, axis=0) / n_points
+        
     @staticmethod
     def center_points_in_unit_sphere(points):
         n_points = points.shape[0]
         barycenter = np.sum(points, axis=0) / n_points
         points -= barycenter   # Center it in the origin.
         max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
-        points /= max_dist
+        points /= max_dist * 2
         return points
     
     @staticmethod
