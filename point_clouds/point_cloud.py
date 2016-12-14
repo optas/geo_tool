@@ -59,7 +59,7 @@ class Point_Cloud(object):
         x = self.points[:,0]
         y = self.points[:,1]
         z = self.points[:,2]
-        Point_Cloud.plot_3d_point_cloud(x, y, z, *args, **kwargs)
+        return Point_Cloud.plot_3d_point_cloud(x, y, z, *args, **kwargs)
     
     def barycenter(self):
         n_points = self.points.shape[0]
@@ -75,8 +75,10 @@ class Point_Cloud(object):
         return points
     
     @staticmethod
-    def plot_3d_point_cloud(x, y, z, *args, **kwargs):
+    def plot_3d_point_cloud(x, y, z, show=True, *args, **kwargs):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(x, y, z, *args, **kwargs)
-        plt.show()
+        if show:
+            plt.show()
+        return fig

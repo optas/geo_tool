@@ -1,8 +1,8 @@
 '''
-Created on Jun 14, 2016
+Created on June 14, 2016
 
-@author:    Panos Achlioptas
-@contact:   pachlioptas@gmail.com
+@author:    Panayotes Achlioptas
+@contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any
             way you want for non-commercial purposes. 
 '''
@@ -10,9 +10,13 @@ import os
 import re
 import cv2
 from glob import glob
-from mayavi import mlab
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+try:
+    from mayavi import mlab as mayalab
+except:
+    warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
+    
 
 @mlab.show
 @mlab.animate(delay=10)

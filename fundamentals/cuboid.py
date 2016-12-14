@@ -118,8 +118,26 @@ class Cuboid(object):
             return float(inte) / min(self.volume(),  other.volume())
         else:
             ValueError('ratio_type must be either \'union\', or \'min\'.')
-            
-                        
+    
+    def plot(self, axis=None, c='r'):
+        corners = self.corner_points()
+        if axis != None:
+            axis.plot([corners[0,0], corners[1,0]], [corners[0,1], corners[1,1]], zs=[corners[0,2], corners[1,2]], c=c)
+            axis.plot([corners[1,0], corners[2,0]], [corners[1,1], corners[2,1]], zs=[corners[1,2], corners[2,2]], c=c)
+            axis.plot([corners[2,0], corners[3,0]], [corners[2,1], corners[3,1]], zs=[corners[2,2], corners[3,2]], c=c)
+            axis.plot([corners[3,0], corners[0,0]], [corners[3,1], corners[0,1]], zs=[corners[3,2], corners[0,2]], c=c)
+            axis.plot([corners[4,0], corners[5,0]], [corners[4,1], corners[5,1]], zs=[corners[4,2], corners[5,2]], c=c)
+            axis.plot([corners[5,0], corners[6,0]], [corners[5,1], corners[6,1]], zs=[corners[5,2], corners[6,2]], c=c)
+            axis.plot([corners[6,0], corners[7,0]], [corners[6,1], corners[7,1]], zs=[corners[6,2], corners[7,2]], c=c)
+            axis.plot([corners[7,0], corners[4,0]], [corners[7,1], corners[0,1]], zs=[corners[7,2], corners[4,2]], c=c)
+            axis.plot([corners[0,0], corners[4,0]], [corners[0,1], corners[4,1]], zs=[corners[0,2], corners[4,2]], c=c)
+            axis.plot([corners[1,0], corners[5,0]], [corners[1,1], corners[5,1]], zs=[corners[1,2], corners[5,2]], c=c)
+            axis.plot([corners[2,0], corners[6,0]], [corners[2,1], corners[6,1]], zs=[corners[2,2], corners[6,2]], c=c)
+            axis.plot([corners[3,0], corners[7,0]], [corners[3,1], corners[7,1]], zs=[corners[3,2], corners[7,2]], c=c)
+        else:
+            ValueError('NYI')
+                    
+                    
     @staticmethod
     def bounding_box_of_3d_points(points):
         xmin = np.min(points[:,0])

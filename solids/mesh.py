@@ -12,7 +12,11 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
-from mayavi import mlab as mayalab
+try:
+    from mayavi import mlab as mayalab
+except:
+    warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
+    
 
 import mesh_cleaning as cleaning
 from .. utils import linalg_utils as utils
