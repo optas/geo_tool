@@ -18,7 +18,7 @@ import mesh_cleaning as cleaning
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
 from .. in_out import soup as io
-from .. fundamentals import Graph, Bounding_Box
+from .. fundamentals import Graph, Cuboid
 from .. point_clouds import Point_Cloud
 
 l2_norm = utils.l2_norm
@@ -247,7 +247,7 @@ class Mesh(object):
         return normals
 
     def bounding_box(self):
-        return Bounding_Box.bounding_box_of_3d_points(self.vertices)
+        return Cuboid.bounding_box_of_3d_points(self.vertices)
     
     def center_in_unit_sphere(self):
         self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)

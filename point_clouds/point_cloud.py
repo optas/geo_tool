@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
     
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils
-from .. fundamentals import Bounding_Box
+from .. fundamentals import Cuboid
 
 l2_norm = utils.l2_norm
 
@@ -49,7 +49,7 @@ class Point_Cloud(object):
         return copy.deepcopy(self)
     
     def bounding_box(self):
-        return Bounding_Box.bounding_box_of_3d_points(self.points)
+        return Cuboid.bounding_box_of_3d_points(self.points)
     
     def center_in_unit_sphere(self):
         self.points = Point_Cloud.center_points_in_unit_sphere(self.points)

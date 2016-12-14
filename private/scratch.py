@@ -11,10 +11,8 @@ Dirty scripts checking geo_tool functionality
 import sys
 import numpy as np
 import os.path as osp
-
 from scipy import spatial
- 
- 
+  
 git_path = '/Users/optas/Documents/Git_Repos/'
 sys.path.insert(0, git_path)
 
@@ -66,14 +64,14 @@ def main_Point_Cloud():
 
 def main_Point_Cloud_Annotations():    
     class_id = '02958343'
-    model_id = '1a0bc9ab92c915167ae33d942430658c' 
-    anno_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/points_label/wheel/' + model_id + '.seg'
+    model_id = '1a0c91c02ef35fbe68f60a737d94994a' 
+#     anno_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/points_label/wheel/' + model_id + '.seg'
+    anno_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/expert_verified/points_label/' + model_id + '.seg'
     pts_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/points/' + model_id + '.pts'
     points = gio.load_crude_point_cloud(pts_file)
     anno = gio.load_annotation_of_points(anno_file)
     point_cloud = Point_Cloud(points = points)
     point_cloud.plot(c=anno)
-#     plot_3d_point_cloud(point_cloud.points[:,0], point_cloud.points[:,1], point_cloud.points[:,2], )
         
     
 
