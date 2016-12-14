@@ -96,6 +96,23 @@ def format_image_tensor_for_tf(im_tensor, whiten=True):
             new_tensor[ind,:,:] = per_image_whitening(im)            
     return np.expand_dims(new_tensor, 3)             # Add singleton trailing dimension.
 
+def load_crude_point_cloud(file_name, delimiter=' ', comments='#'):
+    '''
+    Input: file_name (string) of a file containing 3D points. Each line of the file 
+    is expected to contain exactly one point. The x,y,z coordinates of the point are separated via the provided 
+    delimiter character(s).     
+    '''
+    return np.loadtxt(file_name, dtype=np.float32, comments=comments, delimiter=delimiter)
+
+def load_annotation_of_points(file_name, format='shape_net'):
+    '''
+    Loads the annotation file that describes for every point of a point cloud which part it belongs too. 
+    '''
+    if format == 'shape_net':
+        return np.loadtxt(file_name, dtype=np.int16)
+    else:
+        ValueError('NIY.')
+                      
 
 def load_ply(file_name, with_faces=False):
     ply_data = PlyData.read(file_name)

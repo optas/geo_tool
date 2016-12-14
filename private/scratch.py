@@ -21,7 +21,7 @@ sys.path.insert(0, git_path)
 from geo_tool import Mesh, Graph, Point_Cloud, Laplace_Beltrami
 import geo_tool.solids.mesh_cleaning as cleaning
 import geo_tool.signatures.node_signatures as ns
-
+import geo_tool.in_out.soup as gio
 
 ############################################################
 ## TODO: check ravel() vs. np.repeat (used in geo_tool)
@@ -59,14 +59,26 @@ def main_Point_Cloud_Saliency():
     from autopredictors import point_cloud_saliency
     
     
-
 def main_Point_Cloud():
     ply_file = '/Users/optas/Documents/Git_Repos/autopredictors/point_cloud_saliency/test_data/airplane.ply'
     cloud = Point_Cloud(ply_file=ply_file)
     print cloud
 
+def main_Point_Cloud_Annotations():    
+    class_id = '02958343'
+    model_id = '1a0bc9ab92c915167ae33d942430658c' 
+    anno_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/points_label/wheel/' + model_id + '.seg'
+    pts_file = '/Users/optas/DATA/Shapes/Shape_Net_Core_with_Part_Anno/v0/' + class_id + '/points/' + model_id + '.pts'
+    points = gio.load_crude_point_cloud(pts_file)
+    anno = gio.load_annotation_of_points(anno_file)
+    point_cloud = Point_Cloud(points = points)
+    point_cloud.plot(c=anno)
+#     plot_3d_point_cloud(point_cloud.points[:,0], point_cloud.points[:,1], point_cloud.points[:,2], )
+        
+    
 
 if __name__ == '__main__':
 #     main_Mesh()
 #     main_Point_Cloud()
-    main_Point_Cloud_Saliency()
+#     main_Point_Cloud_Saliency()
+    main_Point_Cloud_Annotations()

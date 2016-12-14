@@ -9,7 +9,9 @@ Created on December 8, 2016
 
 import copy
 import numpy as np
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+    
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils
 from .. fundamentals import Bounding_Box
@@ -22,14 +24,14 @@ class Point_Cloud(object):
     Dependencies:
         1. plyfile 0.4: PLY file reader/writer. DOI: https://pypi.python.org/pypi/plyfile
     '''
-    def __init__(self, point=None, ply_file=None):
+    def __init__(self, points=None, ply_file=None):
         '''
         Constructor
         '''
         if ply_file != None:            
             self.points = io.load_ply(ply_file)         
         else:
-            self.point = points 
+            self.points = points 
                         
     @property
     def points(self):
@@ -50,9 +52,14 @@ class Point_Cloud(object):
         return Bounding_Box.bounding_box_of_3d_points(self.points)
     
     def center_in_unit_sphere(self):
-        self.points = Point_Cloud.center_in_unit_sphere(self.points)
+        self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
         return self
     
+    def plot(self, *args, **kwargs):
+        x = self.points[:,0]
+        y = self.points[:,1]
+        z = self.points[:,2]
+        Point_Cloud.plot_3d_point_cloud(x, y, z, *args, **kwargs)
             
     @staticmethod
     def center_points_in_unit_sphere(points):
@@ -62,3 +69,10 @@ class Point_Cloud(object):
         max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
         points /= max_dist
         return points
+    
+    @staticmethod
+    def plot_3d_point_cloud(x, y, z, *args, **kwargs):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(x, y, z, *args, **kwargs)
+        plt.show()
