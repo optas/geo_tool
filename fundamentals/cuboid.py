@@ -72,29 +72,50 @@ class Cuboid(object):
         zmin_f = corners[corners[:,2] == zmin, :]
         zmax_f = corners[corners[:,2] == zmax, :]
         return [xmin_f, xmax_f, ymin_f, ymax_f, zmin_f, zmax_f]
-                 
-    def containing_sector(self, sector_center, ignore_z_axis=True):
-        # TODO - break into multiple move to Point Clouds
-        # TODO - check that it is feasible
-        def angle_of_sector(sector_center, x1, y1, x2, y2):
+    
+    def is_point_inside(self, point):
+        [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
+        return np.all([xmin, ymin, zmin]<=point) and np.all([xmax, ymax, zmax]>=point) 
+                     
+    def containing_sector(self, sector_center, ignore_z_axis=True):        
+        if self.is_point_inside(sector_center):
+            raise ValueError('Sector\'s center lies inside the bounding box.')
+            
+        def angle_of_sector(sector_center, side):
+            x1, y1, x2, y2 = side
             line_1 = np.array([x1 - sector_center[0], y1 - sector_center[1]])  # First diagonal pair of points of cuboid   
             line_2 = np.array([x2 - sector_center[0], y2 - sector_center[1]])
-            ns1 = np.square(l2_norm(line_1))
-            ns2 = np.square(l2_norm(line_2))        
-            ns3 = np.square(l2_norm(np.array([x1-y1, x2-y2]) ))            
-            cos1 = (ns1 + ns2 - ns3) / 2 * line_1.dot(line_2)
-            a1 = np.arccos(cos1)
-            assert(a1<=180 and a1>=0)
-            return a1        
+            cos =  line_1.dot(line_2) / (l2_norm(line_1) * l2_norm(line_2))
+            if cos >= 1 or cos <= -1:
+                angle = 0
+            else:              
+                angle = np.arccos(cos)
+                assert(angle <= np.pi and angle >= 0)
+            return angle        
         
-        if ignore_z_axis:
+        if ignore_z_axis:                                            
             [xmin, ymin, _, xmax, ymax, _] = self.extrema
-            a1 = angle_of_sector(sector_center, xmin, ymin, xmax, ymax)
-            a2 = angle_of_sector(sector_center, xmax, ymin, xmin, ymax)
-            if a1>= a2:
-                return np.array([xmin, ymin]), np.array([xmax, ymax])
-            else:
-                return np.array([xmax, ymin]), np.array([xmin, ymax])
+            sides = [ [xmin, ymin, xmax, ymax],                                                        
+                      [xmax, ymin, xmin, ymax],                      
+                      [xmin, ymax, xmax, ymax],                                            
+                      [xmin, ymin, xmax, ymin],                      
+                      [xmin, ymin, xmin, ymax],
+                      [xmax, ymin, xmax, ymax],                                            
+                    ]
+            
+            a0 = angle_of_sector(sector_center, sides[0])
+            a1 = angle_of_sector(sector_center, sides[1])  # a0, a1: checking the diagonals.            
+            a2 = angle_of_sector(sector_center, sides[2])
+            a3 = angle_of_sector(sector_center, sides[3])
+            a4 = angle_of_sector(sector_center, sides[4])
+            a5 = angle_of_sector(sector_center, sides[5])            
+            largest = np.argmax([a0, a1, a2, a3, a4, a5])
+            return  np.array(sides[largest][0:2]), np.array(sides[largest][2:])
+#                               
+#             if a1 >= a2:
+#                 return np.array([xmin, ymin]), np.array([xmax, ymax])
+#             else:
+#                 return np.array([xmax, ymin]), np.array([xmin, ymax])
                                                            
     def union_with(self, other):
         return self.volume()  + other.volume() - self.intersection_with(other)            
