@@ -55,11 +55,11 @@ class Point_Cloud(object):
         self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
         return self
     
-    def plot(self, *args, **kwargs):
+    def plot(self, show=True, *args, **kwargs):
         x = self.points[:,0]
         y = self.points[:,1]
         z = self.points[:,2]
-        return Point_Cloud.plot_3d_point_cloud(x, y, z, *args, **kwargs)
+        return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, *args, **kwargs)
     
     def barycenter(self):
         n_points = self.points.shape[0]
