@@ -74,10 +74,19 @@ class Cuboid(object):
         return [xmin_f, xmax_f, ymin_f, ymax_f, zmin_f, zmax_f]
     
     def is_point_inside(self, point):
+        '''Given a 3D point tests if it lies inside the Cuboid.
+        '''
         [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
         return np.all([xmin, ymin, zmin]<=point) and np.all([xmax, ymax, zmax]>=point) 
                      
-    def containing_sector(self, sector_center, ignore_z_axis=True):        
+    def containing_sector(self, sector_center, ignore_z_axis=True):
+        '''Computes the tightest (conic) sector that contains the Cuboid. The sector's center is defined by the user.
+        Input:
+            sector_center: 3D Point where the sector begins.
+            ignore_z_axis: (Boolean) if True the Cuboid is treated as rectangle by eliminating it's z-dimension.
+        Notes: Roughly it computes the angle between the ray's starting at the sector's center and each side of the cuboid. 
+        The one with the largest angle is the requested sector.          
+        '''        
         if self.is_point_inside(sector_center):
             raise ValueError('Sector\'s center lies inside the bounding box.')
             
@@ -111,11 +120,6 @@ class Cuboid(object):
             a5 = angle_of_sector(sector_center, sides[5])            
             largest = np.argmax([a0, a1, a2, a3, a4, a5])
             return  np.array(sides[largest][0:2]), np.array(sides[largest][2:])
-#                               
-#             if a1 >= a2:
-#                 return np.array([xmin, ymin]), np.array([xmax, ymax])
-#             else:
-#                 return np.array([xmax, ymin]), np.array([xmin, ymax])
                                                            
     def union_with(self, other):
         return self.volume()  + other.volume() - self.intersection_with(other)            
@@ -141,6 +145,11 @@ class Cuboid(object):
             ValueError('ratio_type must be either \'union\', or \'min\'.')
     
     def plot(self, axis=None, c='r'):
+        '''Plot the Cuboid.
+        Input:
+            axis - (matplotlib.axes.Axes) where the cuboid will be drawn.
+            c - (String) specifying the color of the cuboid. Must be valid for matplotlib.pylab.plot
+        '''
         corners = self.corner_points()
         if axis != None:
             axis.plot([corners[0,0], corners[1,0]], [corners[0,1], corners[1,1]], zs=[corners[0,2], corners[1,2]], c=c)
