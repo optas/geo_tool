@@ -77,6 +77,14 @@ def mean_curvature(in_mesh, laplace_beltrami):
     mean_curv = 0.5 * np.sum(N * (laplace_beltrami.W * in_mesh.vertices), 1)
     return mean_curv
 
+def heat_kernel_embedding(lb, n_eigs, n_time):
+    evals, evecs = lb.spectra(n_eigs)
+    pos_index = evals > 0
+    evals = evals[pos_index]
+    evecs = evecs[:, pos_index]
+    time_points = hks_time_sample_generator(evals[0], evals[-1], n_time)        
+    return heat_kernel_signature(evals, evecs.T, time_points)
+    
 
 def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     if len(evals) != evecs.shape[0]:

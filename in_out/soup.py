@@ -97,6 +97,49 @@ def format_image_tensor_for_tf(im_tensor, whiten=True):
     return np.expand_dims(new_tensor, 3)             # Add singleton trailing dimension.
 
 
+def load_wavefront_obj(file_name):
+    '''Loads the vertices, the faces and the face normals (if exist) of a wavefront .obj file.
+    It ignores any textures, materials, free forms or vertex normals.
+    '''
+    vertices = list()            
+    faces = list()        
+    normals = list()       
+    
+    with open(file_name, 'r') as f_in:            
+        for line in f_in:
+            
+            if line.startswith('#'): 
+                continue
+            values = line.split()
+            
+            if not values or values[0] in ('usemtl', 'usemat', 'vt', 'mtllib', 'vp'):  
+                continue            
+                                            
+            if values[0] == 'v':
+                v = map(np.float32, values[1:4])                
+                vertices.append(v)
+            elif values[0] == 'vn':
+                v = map(np.float32, values[1:4])            
+                normals.append(v)
+            elif values[0] == 'f':
+                face = []                
+                for v in values[1:]:
+                    w = v.split('/')
+                    face.append(np.int32(w[0]))  # Starts at 1. Can be negative.
+                faces.append(face)
+    
+    vertices = np.array(vertices)
+    faces = np.array(faces)
+    normals = np.array(normals)
+    faces = faces - 1
+    if np.any(faces < 0):
+        print('Negative face indexing in .obj is used.')
+        n_v = vertices.shape[0]
+        faces[faces < 0] = n_v - faces[faces < 0]
+    
+    return vertices, faces, normals
+
+
 def load_crude_point_cloud(file_name, delimiter=' ', comments='#', format='shape_net'):
     '''
     Input: file_name (string) of a file containing 3D points. Each line of the file 
@@ -185,6 +228,16 @@ def load_off(file_name):
     if f_color is not None:
         return verts, faces, f_color
     return verts, faces
+
+def load_mesh_from_file(file_name):
+    dot_loc = file_name.rfind('.')
+    file_type = file_name[dot_loc+1:]
+    if file_type == 'off':
+        return load_off(file_name)
+    elif   file_type == 'obj':
+        return load_wavefront_obj(file_name)
+    else:
+        ValueError('NIY.')
     
 def write_off(out_file, vertices, faces, vertex_color=None, face_color=None):
     nv = len(vertices)

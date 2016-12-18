@@ -25,7 +25,7 @@ class Graph(object):
     @staticmethod
     def connected_components(A):    
         return sparse.csgraph.connected_components(A, directed=False)
-    
+        
     @staticmethod    
     def largest_connected_components_at_thres(node_labels, thres):
         '''

@@ -12,6 +12,7 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
+ 
 try:
     from mayavi import mlab as mayalab
 except:
@@ -33,12 +34,12 @@ class Mesh(object):
     A class representing a triangular Mesh of a 3D surface. Provides a variety of relevant functions, including
     loading and plotting utilities.
     '''
-    def __init__(self, vertices=None, triangles=None, off_file=None):
+    def __init__(self, vertices=None, triangles=None, file_name=None):
         '''
         Constructor
         '''
-        if off_file != None:
-            self.vertices, self.triangles = io.load_off(off_file)[:2]
+        if file_name != None:
+            self.vertices, self.triangles = io.load_mesh_from_file(file_name)[:2]
         else:
             self.vertices = vertices 
             self.triangles = triangles
@@ -90,9 +91,9 @@ class Mesh(object):
             mesh_plot = mayalab.triangular_mesh(self.vertices[:, 0], self.vertices[:, 1], self.vertices[:, 2], self.triangles, *args, **kwargs)
 
         if show:
-            mayalab.show()
-        else:
-            return mesh_plot
+            mayalab.show()        
+        
+        return mesh_plot
 
     def plot_normals(self, scale_factor=1, representation='mesh'):
         self.plot(show=False, representation=representation)
@@ -139,7 +140,7 @@ class Mesh(object):
 
     def inverse_triangle_dictionary(self):
         '''Returns a dictionary mapping triangles, i.e., triplets (n1, n2, n3) into their
-        position in the array of triangles kept
+        position in the array of triangles kept.
         '''
         keys = map(tuple, self.triangles)
         return dict(zip(keys, range(len(keys))))
@@ -257,13 +258,13 @@ class Mesh(object):
         self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
         return self
     
-    def sample_faces(self, n_samples):
+    def sample_faces(self, n_samples, at_least_one=True):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
 
         Args:
             n_samples (int) : number of points to be sampled in total
-
+            at_least_one (int): Each face will have at least one sample point (TODO: broken fix)
         Returns:
             numpy array (n_samples, 3) containing the [x,y,z] coordinates of the samples.
 
@@ -278,9 +279,22 @@ class Mesh(object):
         face_areas = self.area_of_triangles()
         face_areas = face_areas / np.sum(face_areas)
 
-        n_samples_per_face = np.ceil(n_samples * face_areas)
+        n_samples_per_face = np.round(n_samples * face_areas)
+        if at_least_one:
+            n_samples_per_face[n_samples_per_face==0] = 1  
+        
         n_samples_per_face = n_samples_per_face.astype(np.int)
-        n_samples = int(np.sum(n_samples_per_face))
+        n_samples_s = int(np.sum(n_samples_per_face))
+        
+        # Control for float truncation (breaks the area analogy sampling)
+        diff = n_samples_s - n_samples 
+        indices = np.arange(self.num_triangles)
+        if diff > 0: # we have a surplus.
+            rand_faces = np.random.choice(indices[n_samples_per_face >= 1], abs(diff), replace=False)   
+            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] - 1
+        elif diff < 0:
+            rand_faces = np.random.choice(indices, abs(diff), replace=False)
+            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] + 1        
 
         # Create a vector that contains the face indices
         sample_face_idx = np.zeros((n_samples, ), dtype=int)
@@ -297,7 +311,15 @@ class Mesh(object):
         P = (1 - np.sqrt(r[:, 0:1])) * A + np.sqrt(r[:, 0:1]) * (1 - r[:, 1:]) * B + \
             np.sqrt(r[:, 0:1]) * r[:, 1:] * C
         return P, sample_face_idx
-
+    
+    def swap_axes_of_vertices(self, permutation):
+        v = self.vertices         
+        nv = self.num_vertices
+        vx = v[:, permutation[0]].reshape(nv, 1)
+        vy = v[:, permutation[1]].reshape(nv, 1)
+        vz = v[:, permutation[2]].reshape(nv, 1)        
+        self.vertices = np.hstack((vx, vy, vz))
+    
     @staticmethod
     def __decorate_mesh_with_triangle_color(mesh_plot, triangle_function):   # TODO-P do we really need this to be static?
         mesh_plot.mlab_source.dataset.cell_data.scalars = triangle_function
