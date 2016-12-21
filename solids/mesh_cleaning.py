@@ -1,7 +1,7 @@
 '''
 Created on June 14, 2016
 
-@author:    Panayotes Achlioptas
+@author:    Panos Achlioptas
 @contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''

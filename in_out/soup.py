@@ -1,7 +1,7 @@
 '''
 Created on June 14, 2016
 
-@author:    Panayotes Achlioptas
+@author:    Panos Achlioptas
 @contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
@@ -13,7 +13,6 @@ import os.path as osp
 import numpy as np
 from glob import glob
 from .. external_code.python_plyfile.plyfile import PlyData
-# from external_tools.python_plyfile.plyfile import PlyData
 
 # TODO Break down in more in_out modules
 

@@ -1,7 +1,7 @@
 '''
 Created on December 13, 2016
 
-@author: Panayotes Achlioptas and Lin Shao
+@author: Panos Achlioptas and Lin Shao
 @contact: pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
