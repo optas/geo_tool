@@ -12,8 +12,8 @@ import os
 import os.path as osp
 import numpy as np
 from glob import glob
-
-from external_tools.python_plyfile.plyfile import PlyData
+from .. external_code.python_plyfile.plyfile import PlyData
+# from external_tools.python_plyfile.plyfile import PlyData
 
 # TODO Break down in more in_out modules
 
