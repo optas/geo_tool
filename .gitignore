@@ -3,3 +3,4 @@
 .pydevproject
 .project
 *.pyc
+external_code/python_plyfile/build/
