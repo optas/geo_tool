@@ -298,19 +298,6 @@ def files_in_subdirs(top_dir, search_pattern):
                 res.append(full_name)
     return res
 
-def create_dir(dir_path):
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-                
-def copy_folder_structure(top_dir, out_dir):    
-    if top_dir[-1] != os.sep:
-        top_dir += os.sep
-    
-    all_dirs  = (dir_name for dir_name, _, _ in os.walk(top_dir))
-    all_dirs.next() # Exhaust first name which is identical to the top_dir    
-    for d in all_dirs:                
-        create_dir(osp.join(out_dir, d.replace(top_dir, '')))
-
 # ADD as way of making mask from image.  
 # image         = cv2.imread(views_folder + '/img-00-00.png', cv2.IMREAD_UNCHANGED)
 # plt.subplot(1,2,1); plt.imshow(image)
