@@ -13,8 +13,7 @@ from numpy.matlib import repmat
 from .. utils import linalg_utils as lu
 
 class Graph(object):
-    '''
-    classdocs
+    '''A class offering some basic graph-related functions. It uses mostly scipy modules.  
     '''
 
     def __init__(self, params):
@@ -74,7 +73,6 @@ class Graph(object):
         if direction == 'in':
             A = A.T                
         return A
-    
     
     
     @staticmethod
