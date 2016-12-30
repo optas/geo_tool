@@ -64,6 +64,14 @@ class Point_Cloud(object):
     def barycenter(self):
         n_points = self.points.shape[0]
         return np.sum(self.points, axis=0) / n_points
+    
+    def lex_sort(self, axis=-1):
+        '''Sorts the list storing the points of the Point_Cloud in a lexicographical order. 
+        See numpy.lexsort        
+        '''
+        lex_indices = np.lexsort(self.points.T, axis=axis);
+        self.points = self.points[lex_indices,:]
+        return self, lex_indices 
         
     @staticmethod
     def center_points_in_unit_sphere(points):
