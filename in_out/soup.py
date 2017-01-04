@@ -139,13 +139,13 @@ def load_wavefront_obj(file_name):
     return vertices, faces, normals
 
 
-def load_crude_point_cloud(file_name, delimiter=' ', comments='#', permute=None):
+def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.float32, permute=None):
     '''
     Input: file_name (string) of a file containing 3D points. Each line of the file 
     is expected to contain exactly one point. The x,y,z coordinates of the point are separated via the provided 
     delimiter character(s).     
     '''    
-    data = np.loadtxt(file_name, dtype=np.float32, comments=comments, delimiter=delimiter)
+    data = np.loadtxt(file_name, dtype=dtype, comments=comments, delimiter=delimiter)
     if permute != None:
         data = np.vstack([data[:,permute[0]], data[:,permute[1]], data[:,permute[2]]]).T  # TODO - do via numpy 
     return data
