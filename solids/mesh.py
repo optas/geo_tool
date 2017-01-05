@@ -12,24 +12,22 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
- 
-try:
-    from mayavi import mlab as mayalab
-except:
-    warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
-    
 
-import mesh_cleaning as cleaning
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
 from .. in_out import soup as io
 from .. fundamentals import Graph, Cuboid
 from .. point_clouds import Point_Cloud
 
+try:
+    from mayavi import mlab as mayalab
+except:
+    warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
+
 l2_norm = utils.l2_norm
 
 
-class Mesh(object): 
+class Mesh(object):
     '''
     A class representing a triangular Mesh of a 3D surface. Provides a variety of relevant functions, including
     loading and plotting utilities.
@@ -38,12 +36,12 @@ class Mesh(object):
         '''
         Constructor
         '''
-        if file_name != None:
+        if file_name is not None:
             self.vertices, self.triangles = io.load_mesh_from_file(file_name)[:2]
         else:
-            self.vertices = vertices 
+            self.vertices = vertices
             self.triangles = triangles
-            
+
     @property
     def vertices(self):
         return self._vertices
@@ -91,8 +89,8 @@ class Mesh(object):
             mesh_plot = mayalab.triangular_mesh(self.vertices[:, 0], self.vertices[:, 1], self.vertices[:, 2], self.triangles, *args, **kwargs)
 
         if show:
-            mayalab.show()        
-        
+            mayalab.show()
+
         return mesh_plot
 
     def plot_normals(self, scale_factor=1, representation='mesh'):
@@ -117,8 +115,8 @@ class Mesh(object):
         return sp.csr_matrix((vals, (E[:, 0], E[:, 1])), shape=(self.num_vertices, self.num_vertices))
 
     def connected_components(self):
-        return Graph.connected_components(self.adjacency_matrix())    
-    
+        return Graph.connected_components(self.adjacency_matrix())
+
     def barycenter_of_triangles(self):
         tr_in_xyz = self.vertices[self.triangles]
         return np.sum(tr_in_xyz, axis=1) / 3.0
@@ -253,11 +251,11 @@ class Mesh(object):
 
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.vertices)
-    
+
     def center_in_unit_sphere(self):
         self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
         return self
-    
+
     def sample_faces(self, n_samples, at_least_one=True):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
@@ -280,21 +278,22 @@ class Mesh(object):
         face_areas = face_areas / np.sum(face_areas)
 
         n_samples_per_face = np.round(n_samples * face_areas)
+
         if at_least_one:
-            n_samples_per_face[n_samples_per_face==0] = 1  
-        
+            n_samples_per_face[n_samples_per_face == 0] = 1
+
         n_samples_per_face = n_samples_per_face.astype(np.int)
         n_samples_s = int(np.sum(n_samples_per_face))
-        
+
         # Control for float truncation (breaks the area analogy sampling)
-        diff = n_samples_s - n_samples 
+        diff = n_samples_s - n_samples
         indices = np.arange(self.num_triangles)
-        if diff > 0: # we have a surplus.
-            rand_faces = np.random.choice(indices[n_samples_per_face >= 1], abs(diff), replace=False)   
+        if diff > 0:    # we have a surplus.
+            rand_faces = np.random.choice(indices[n_samples_per_face >= 1], abs(diff), replace=False)
             n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] - 1
         elif diff < 0:
             rand_faces = np.random.choice(indices, abs(diff), replace=False)
-            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] + 1        
+            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] + 1
 
         # Create a vector that contains the face indices
         sample_face_idx = np.zeros((n_samples, ), dtype=int)
@@ -311,15 +310,15 @@ class Mesh(object):
         P = (1 - np.sqrt(r[:, 0:1])) * A + np.sqrt(r[:, 0:1]) * (1 - r[:, 1:]) * B + \
             np.sqrt(r[:, 0:1]) * r[:, 1:] * C
         return P, sample_face_idx
-    
+
     def swap_axes_of_vertices(self, permutation):
-        v = self.vertices         
+        v = self.vertices
         nv = self.num_vertices
         vx = v[:, permutation[0]].reshape(nv, 1)
         vy = v[:, permutation[1]].reshape(nv, 1)
-        vz = v[:, permutation[2]].reshape(nv, 1)        
+        vz = v[:, permutation[2]].reshape(nv, 1)
         self.vertices = np.hstack((vx, vy, vz))
-    
+
     @staticmethod
     def __decorate_mesh_with_triangle_color(mesh_plot, triangle_function):   # TODO-P do we really need this to be static?
         mesh_plot.mlab_source.dataset.cell_data.scalars = triangle_function

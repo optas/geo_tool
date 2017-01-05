@@ -129,12 +129,12 @@ def are_coplanar(points):
 
 
 def accumarray(subs, val):
-    ''' Matlab inspired function. 
+    ''' Matlab inspired function.
     A = accumarray(subs,val) returns array A by accumulating elements of vector
-    val using the subscripts subs. If subs is a column vector, then each element 
+    val using the subscripts subs. If subs is a column vector, then each element
     defines a corresponding subscript in the output, which is also a column vector.
     The accumarray function collects all elements of val that have identical subscripts
-    in subs and stores their sum in the location of A corresponding to that 
+    in subs and stores their sum in the location of A corresponding to that
     subscript (for index i, A(i)=sum(val(subs(:)==i))).
     '''
     return np.bincount(subs, weights=val)
