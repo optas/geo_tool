@@ -9,12 +9,12 @@ Created on June 14, 2016
 import cv2
 import re
 import os
-import os.path as osp
 import numpy as np
 from glob import glob
 from .. external_code.python_plyfile.plyfile import PlyData
 
 # TODO Break down in more in_out modules
+
 
 def per_image_whitening(image):
     '''Linearly scales image to have zero mean and unit (variance) norm. The transformation is happening in_place.
@@ -48,14 +48,14 @@ def read_triangle_file(file_name):
     with open(file_name, 'r') as f_in:
         all_lines = f_in.readlines()
     n = len(all_lines)
-    triangles  = np.empty((n, 3), dtype=np.int32)
-    pixels     = np.empty((n, 2), dtype=np.int32)
+    triangles = np.empty((n, 3), dtype=np.int32)
+    pixels = np.empty((n, 2), dtype=np.int32)
     hit_coords = np.empty((n, 3), dtype=np.float32)
     for i in xrange(n):
-        tokens          = all_lines[i].rstrip().split(' ')
-        pixels[i,:]     = [int(tokens[0]), int(tokens[1])]
-        triangles[i,:]  = [int(tokens[2]), int(tokens[3]), int(tokens[4])]
-        hit_coords[i,:] = [float(tokens[5]), float(tokens[6]), float(tokens[7])]                     
+        tokens = all_lines[i].rstrip().split(' ')
+        pixels[i, :] = [int(tokens[0]), int(tokens[1])]
+        triangles[i, :] = [int(tokens[2]), int(tokens[3]), int(tokens[4])]
+        hit_coords[i, :] = [float(tokens[5]), float(tokens[6]), float(tokens[7])]
     return pixels, triangles, hit_coords
 
 
@@ -72,27 +72,27 @@ def load_views_of_shape(view_folder, file_format, shape_views=None, reshape_to=N
 
         reshape_to = image.shape
         view_mask.append(image != 0)  # Compute mask before whiten is applied.
-        #if whiten:
+        # if whiten:
         #   image = per_image_whitening(image)
         view_list.append(image)
         cam_pos.append(name_to_cam_position(view))
 
     if shape_views and len(view_list) != shape_views:
         raise IOError('Number of view files (%d) doesn\'t match the expected ones (%d)' % (len(view_list), shape_views))
-    elif len(view_list) == 0: 
+    elif len(view_list) == 0:
         raise IOError('There are no files of given format in this folder.')
     else:
         shape_views = len(view_list)
 
-    views_tensor = np.reshape(view_list, (shape_views, reshape_to[0], reshape_to[1]))    
+    views_tensor = np.reshape(view_list, (shape_views, reshape_to[0], reshape_to[1]))
     return views_tensor, cam_pos, np.array(view_mask)
 
 
-def format_image_tensor_for_tf(im_tensor, whiten=True):    
+def format_image_tensor_for_tf(im_tensor, whiten=True):
     new_tensor = np.zeros(im_tensor.shape, dtype=np.float32)
     if whiten:
         for ind, im in enumerate(im_tensor):
-            new_tensor[ind,:,:] = per_image_whitening(im)            
+            new_tensor[ind, :, :] = per_image_whitening(im)
     return np.expand_dims(new_tensor, 3)             # Add singleton trailing dimension.
 
 
@@ -100,33 +100,32 @@ def load_wavefront_obj(file_name):
     '''Loads the vertices, the faces and the face normals (if exist) of a wavefront .obj file.
     It ignores any textures, materials, free forms or vertex normals.
     '''
-    vertices = list()            
-    faces = list()        
-    normals = list()       
-    
-    with open(file_name, 'r') as f_in:            
+    vertices = list()
+    faces = list()
+    normals = list()
+
+    with open(file_name, 'r') as f_in:
         for line in f_in:
-            
-            if line.startswith('#'): 
+            if line.startswith('#'):
                 continue
             values = line.split()
-            
-            if not values or values[0] in ('usemtl', 'usemat', 'vt', 'mtllib', 'vp'):  
-                continue            
-                                            
+
+            if not values or values[0] in ('usemtl', 'usemat', 'vt', 'mtllib', 'vp'):
+                continue
+
             if values[0] == 'v':
-                v = map(np.float32, values[1:4])                
+                v = map(np.float32, values[1:4])
                 vertices.append(v)
             elif values[0] == 'vn':
-                v = map(np.float32, values[1:4])            
+                v = map(np.float32, values[1:4])
                 normals.append(v)
             elif values[0] == 'f':
-                face = []                
+                face = []
                 for v in values[1:]:
                     w = v.split('/')
                     face.append(np.int32(w[0]))  # Starts at 1. Can be negative.
                 faces.append(face)
-    
+
     vertices = np.array(vertices)
     faces = np.array(faces)
     normals = np.array(normals)
@@ -135,57 +134,61 @@ def load_wavefront_obj(file_name):
         print('Negative face indexing in .obj is used.')
         n_v = vertices.shape[0]
         faces[faces < 0] = n_v - faces[faces < 0]
-    
+
     return vertices, faces, normals
 
 
 def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.float32, permute=None):
     '''
-    Input: file_name (string) of a file containing 3D points. Each line of the file 
-    is expected to contain exactly one point. The x,y,z coordinates of the point are separated via the provided 
-    delimiter character(s).     
-    '''    
+    Input: file_name (string) of a file containing 3D points. Each line of the file
+    is expected to contain exactly one point. The x,y,z coordinates of the point are separated via the provided
+    delimiter character(s).
+    '''
+
     data = np.loadtxt(file_name, dtype=dtype, comments=comments, delimiter=delimiter)
-    if permute != None:
-        data = np.vstack([data[:,permute[0]], data[:,permute[1]], data[:,permute[2]]]).T  # TODO - do via numpy 
+    if permute is not None:
+        data = np.vstack([data[:, permute[0]], data[:, permute[1]], data[:, permute[2]]]).T  # TODO - do via numpy
     return data
 
-def load_annotation_of_points(file_name, format='shape_net'):
+
+def load_annotation_of_points(file_name, data_format='shape_net'):
     '''
-    Loads the annotation file that describes for every point of a point cloud which part it belongs too. 
+    Loads the annotation file that describes for every point of a point cloud which part it belongs too.
     '''
-    if format == 'shape_net':
+
+    if data_format == 'shape_net':
         return np.loadtxt(file_name, dtype=np.int16)
     else:
         ValueError('NIY.')
-                      
+
 
 def load_ply(file_name, with_faces=False):
     ply_data = PlyData.read(file_name)
     points = ply_data['vertex']
     points = np.vstack([points['x'], points['y'], points['z']]).T
-    
+
     if with_faces:
         faces = np.vstack(ply_data['face']['vertex_indices'])
         return points, faces
     else:
         return points
 
+
 def load_off(file_name):
     _float = np.float32
-    _int   = np.int32   
+    _int = np.int32
     break_floats = lambda in_file : [_float(s) for s in in_file.readline().strip().split(' ')]
-    
+
     with open(file_name, 'r') as f_in:
         header = f_in.readline().strip()
         if header not in ['OFF', 'COFF']: 
-            raise ValueError( 'Not a valid OFF header.')            
-        
-        n_verts, n_faces, _ = tuple([_int(s) for s in f_in.readline().strip().split(' ')]) # Disregard 3rd argument: n_edges.         
-        
-        verts = np.empty((n_verts, 3) , dtype=_float)
-        v_color = None        
-        first_line = break_floats(f_in)         
+            raise ValueError( 'Not a valid OFF header.')
+
+        n_verts, n_faces, _ = tuple([_int(s) for s in f_in.readline().strip().split(' ')]) # Disregard 3rd argument: n_edges.
+
+        verts = np.empty((n_verts, 3), dtype=_float)
+        v_color = None
+        first_line = break_floats(f_in)
         verts[0,:] =  first_line[:3]                        
         if len(first_line) > 3:
             v_color = np.empty((n_verts, 4) , dtype=_float)            
