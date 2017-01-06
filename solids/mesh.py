@@ -256,7 +256,7 @@ class Mesh(object):
         self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
         return self
 
-    def sample_faces(self, n_samples, at_least_one=True):
+    def sample_faces(self, n_samples, at_least_one=True, seed=0):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
 
@@ -274,6 +274,7 @@ class Mesh(object):
             P = (1 - \sqrt{r_1})A + \sqrt{r_1} (1 - r_2) B + \sqrt{r_1} r_2 C
           \end{align}
         """
+
         face_areas = self.area_of_triangles()
         face_areas = face_areas / np.sum(face_areas)
 
@@ -285,6 +286,7 @@ class Mesh(object):
         n_samples_per_face = n_samples_per_face.astype(np.int)
         n_samples_s = int(np.sum(n_samples_per_face))
 
+        np.random.seed(seed)
         # Control for float truncation (breaks the area analogy sampling)
         diff = n_samples_s - n_samples
         indices = np.arange(self.num_triangles)
