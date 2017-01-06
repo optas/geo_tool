@@ -11,14 +11,15 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-    
+
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils
 from .. fundamentals import Cuboid
 
 l2_norm = utils.l2_norm
 
-class Point_Cloud(object): 
+
+class Point_Cloud(object):
     '''
     A class representing a 3D Point Cloud.
     Dependencies:
@@ -28,18 +29,18 @@ class Point_Cloud(object):
         '''
         Constructor
         '''
-        if ply_file != None:            
-            self.points = io.load_ply(ply_file)         
+        if ply_file is not None:
+            self.points = io.load_ply(ply_file)
         else:
-            self.points = points 
-                        
+            self.points = points
+
     @property
     def points(self):
         return self._points
 
     @points.setter
     def points(self, value):
-        self._points  = value
+        self._points = value
         self.num_points = len(self._points)
 
     def __str__(self):
@@ -47,41 +48,41 @@ class Point_Cloud(object):
 
     def copy(self):
         return copy.deepcopy(self)
-    
+
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)
-    
+
     def center_in_unit_sphere(self):
         self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
         return self
-    
+
     def plot(self, show=True, *args, **kwargs):
-        x = self.points[:,0]
-        y = self.points[:,1]
-        z = self.points[:,2]
+        x = self.points[:, 0]
+        y = self.points[:, 1]
+        z = self.points[:, 2]
         return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, *args, **kwargs)
-    
+
     def barycenter(self):
         n_points = self.points.shape[0]
         return np.sum(self.points, axis=0) / n_points
-    
+
     def lex_sort(self, axis=-1):
-        '''Sorts the list storing the points of the Point_Cloud in a lexicographical order. 
-        See numpy.lexsort        
+        '''Sorts the list storing the points of the Point_Cloud in a lexicographical order.
+        See numpy.lexsort
         '''
-        lex_indices = np.lexsort(self.points.T, axis=axis);
-        self.points = self.points[lex_indices,:]
-        return self, lex_indices 
-        
+        lex_indices = np.lexsort(self.points.T, axis=axis)
+        self.points = self.points[lex_indices, :]
+        return self, lex_indices
+
     @staticmethod
     def center_points_in_unit_sphere(points):
         n_points = points.shape[0]
         barycenter = np.sum(points, axis=0) / n_points
         points -= barycenter   # Center it in the origin.
-        max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
+        max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
         points /= max_dist * 2
         return points
-    
+
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, *args, **kwargs):
         fig = plt.figure()
