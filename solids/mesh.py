@@ -286,16 +286,17 @@ class Mesh(object):
         n_samples_per_face = n_samples_per_face.astype(np.int)
         n_samples_s = int(np.sum(n_samples_per_face))
 
-        np.random.seed(seed)
-        # Control for float truncation (breaks the area analogy sampling)
-        diff = n_samples_s - n_samples
-        indices = np.arange(self.num_triangles)
-        if diff > 0:    # we have a surplus.
-            rand_faces = np.random.choice(indices[n_samples_per_face >= 1], abs(diff), replace=False)
-            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] - 1
-        elif diff < 0:
-            rand_faces = np.random.choice(indices, abs(diff), replace=False)
-            n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] + 1
+        n_samples = n_samples_s
+#         np.random.seed(seed)
+#         # Control for float truncation (breaks the area analogy sampling)
+#         diff = n_samples_s - n_samples
+#         indices = np.arange(self.num_triangles)
+#         if diff > 0:    # we have a surplus.
+#             rand_faces = np.random.choice(indices[n_samples_per_face >= 1], abs(diff), replace=False)
+#             n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] - 1
+#         elif diff < 0:
+#             rand_faces = np.random.choice(indices, abs(diff), replace=False)
+#             n_samples_per_face[rand_faces] = n_samples_per_face[rand_faces] + 1
 
         # Create a vector that contains the face indices
         sample_face_idx = np.zeros((n_samples, ), dtype=int)

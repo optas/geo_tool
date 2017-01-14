@@ -181,8 +181,8 @@ def load_off(file_name):
 
     with open(file_name, 'r') as f_in:
         header = f_in.readline().strip()
-        if header not in ['OFF', 'COFF']: 
-            raise ValueError( 'Not a valid OFF header.')
+        if header not in ['OFF', 'COFF']:
+            raise ValueError('Not a valid OFF header.')
 
         n_verts, n_faces, _ = tuple([_int(s) for s in f_in.readline().strip().split(' ')]) # Disregard 3rd argument: n_edges.
 
