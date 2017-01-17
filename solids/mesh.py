@@ -218,6 +218,35 @@ class Mesh(object):
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
 
+    def linear_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
+        ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
+        reside inside the meshe's triangles.
+
+        TODO: Lin currently it just sums the values of the vertices on each triangle. For barycentric-coordinates
+        see this:
+        r = np.random.rand(n_samples, 2)
+        A = self.vertices[self.triangles[faces_of_key_points, 0], :]
+        B = self.vertices[self.triangles[faces_of_key_points, 1], :]
+        C = self.vertices[self.triangles[faces_of_key_points, 2], :]
+        P = (1 - np.sqrt(r[:, 0:1])) * A + np.sqrt(r[:, 0:1]) * (1 - r[:, 1:]) * B + \
+            np.sqrt(r[:, 0:1]) * r[:, 1:] * C
+        Args:
+            v_func (num_vertices x 1 numpy array).
+            key_points  (M x 3 numpy array): coordinates of 3D points.
+            faces_of_key_points (M x 1): face ids of the faces each key_point resides on.
+
+        Returns:
+            (M x 1): Function that linearly interpolates the v_func on each key_point.
+        '''
+
+        if len(v_func) != self.num_vertices:
+            raise ValueError('Provided vertex function has inappropriate dimensions. ')
+        tr_func = np.zeros((self.num_triangles, 1))
+        for i, tr in enumerate(self.triangles):
+            v1, v2, v3 = tr
+            tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
+        return tr_func
+
     def normals_of_vertices(self, weight='areas', normalize=False):
         '''Computes the outward normal at each vertex by adding the weighted normals of each triangle a
         vertex is adjacent to. The weights that are used to combine the normals are the areas of the triangles

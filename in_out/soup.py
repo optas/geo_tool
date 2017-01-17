@@ -96,7 +96,7 @@ def format_image_tensor_for_tf(im_tensor, whiten=True):
     return np.expand_dims(new_tensor, 3)             # Add singleton trailing dimension.
 
 
-def load_wavefront_obj(file_name):
+def load_wavefront_obj(file_name, vdtype=np.float32, tdtype=np.int32):
     '''Loads the vertices, the faces and the face normals (if exist) of a wavefront .obj file.
     It ignores any textures, materials, free forms or vertex normals.
     '''
@@ -114,16 +114,16 @@ def load_wavefront_obj(file_name):
                 continue
 
             if values[0] == 'v':
-                v = map(np.float32, values[1:4])
+                v = map(vdtype, values[1:4])
                 vertices.append(v)
             elif values[0] == 'vn':
-                v = map(np.float32, values[1:4])
+                v = map(vdtype, values[1:4])
                 normals.append(v)
             elif values[0] == 'f':
                 face = []
                 for v in values[1:]:
                     w = v.split('/')
-                    face.append(np.int32(w[0]))  # Starts at 1. Can be negative.
+                    face.append(tdtype(w[0]))  # Starts at 1. Can be negative.
                 faces.append(face)
 
     vertices = np.array(vertices)
@@ -174,56 +174,54 @@ def load_ply(file_name, with_faces=False):
         return points
 
 
-def load_off(file_name):
-    _float = np.float32
-    _int = np.int32
-    break_floats = lambda in_file : [_float(s) for s in in_file.readline().strip().split(' ')]
+def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
+    break_floats = lambda in_file : [vdtype(s) for s in in_file.readline().strip().split(' ')]
 
     with open(file_name, 'r') as f_in:
         header = f_in.readline().strip()
         if header not in ['OFF', 'COFF']:
             raise ValueError('Not a valid OFF header.')
 
-        n_verts, n_faces, _ = tuple([_int(s) for s in f_in.readline().strip().split(' ')]) # Disregard 3rd argument: n_edges.
+        n_verts, n_faces, _ = tuple([tdtype(s) for s in f_in.readline().strip().split(' ')])    # Disregard 3rd argument: n_edges.
 
-        verts = np.empty((n_verts, 3), dtype=_float)
+        verts = np.empty((n_verts, 3), dtype=vdtype)
         v_color = None
         first_line = break_floats(f_in)
-        verts[0,:] =  first_line[:3]                        
+        verts[0, :] = first_line[:3]
         if len(first_line) > 3:
-            v_color = np.empty((n_verts, 4) , dtype=_float)            
-            v_color[0,:] = first_line[3:]
+            v_color = np.empty((n_verts, 4), dtype=vdtype)
+            v_color[0, :] = first_line[3:]
             for i in xrange(1, n_verts):
                 line = break_floats(f_in)
-                verts[i,:] = line[:3] 
-                v_color[i,:] = line[3:]
-        else:            
+                verts[i, :] = line[:3]
+                v_color[i, :] = line[3:]
+        else:
             for i in xrange(1, n_verts):
-                verts[i,:] = break_floats(f_in)
-        
+                verts[i, :] = break_floats(f_in)
+
         first_line = [s for s in f_in.readline().strip().split(' ')]
-        poly_type  = int(first_line[0])   # 3 for triangular mesh, 4 for quads etc.
-        faces      = np.empty((n_faces, poly_type) , dtype=_int)
-        faces[0:]  = [_int(f) for f in first_line[1:poly_type+1]] 
-        f_color    = None        
-        if len(first_line) > poly_type + 1:  # Color coded faces.          
-            f_color = np.empty((n_faces, 4) , dtype=_float)
-            f_color[0,:] = first_line[poly_type+1:]  
+        poly_type = int(first_line[0])   # 3 for triangular mesh, 4 for quads etc.
+        faces = np.empty((n_faces, poly_type), dtype=tdtype)
+        faces[0:] = [tdtype(f) for f in first_line[1:poly_type + 1]]
+        f_color = None
+        if len(first_line) > poly_type + 1:  # Color coded faces.
+            f_color = np.empty((n_faces, 4), dtype=vdtype)
+            f_color[0, :] = first_line[poly_type + 1:]
             for i in xrange(1, n_faces):
                 line = [s for s in f_in.readline().strip().split(' ')]
-                ptype = int(line[0])                
+                ptype = int(line[0])
                 if ptype != poly_type:
                     raise ValueError('Mesh contains faces of different dimensions. Loader in not yet implemented for this case.')
-                faces[i,:] = [_int(f) for f in line[1:ptype+1]]
-                f_color[i,:] =[_float(f) for f in line[ptype+1:]]                                 
+                faces[i, :] = [tdtype(f) for f in line[1:ptype + 1]]
+                f_color[i, :] = [vdtype(f) for f in line[ptype + 1:]]
         else:
             for i in xrange(1, n_faces):
-                line =  [_int(s) for s in f_in.readline().strip().split(' ')]
+                line = [tdtype(s) for s in f_in.readline().strip().split(' ')]
                 if line[0] != poly_type:
-                    raise ValueError('Mesh contains faces of different dimensions. Loader in not yet implemented for this case.')                
-                faces[i,:] = line[1:]
-                
-    if v_color is not None and f_color is not None: 
+                    raise ValueError('Mesh contains faces of different dimensions. Loader in not yet implemented for this case.')
+                faces[i, :] = line[1:]
+
+    if v_color is not None and f_color is not None:
         return verts, faces, v_color, f_color
     if v_color is not None:
         return verts, faces, v_color
@@ -231,16 +229,18 @@ def load_off(file_name):
         return verts, faces, f_color
     return verts, faces
 
+
 def load_mesh_from_file(file_name):
     dot_loc = file_name.rfind('.')
-    file_type = file_name[dot_loc+1:]
+    file_type = file_name[dot_loc + 1:]
     if file_type == 'off':
         return load_off(file_name)
-    elif   file_type == 'obj':
+    elif file_type == 'obj':
         return load_wavefront_obj(file_name)
     else:
         ValueError('NIY.')
-    
+
+
 def write_off(out_file, vertices, faces, vertex_color=None, face_color=None):
     nv = len(vertices)
     nf,  tf = faces.shape
