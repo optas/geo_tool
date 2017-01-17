@@ -34,6 +34,9 @@ class Mesh(object):
     '''
     def __init__(self, vertices=None, triangles=None, file_name=None):
         '''
+        Args:
+            vertices (numpy array N x 3): where N is the number of vertices of the underlying mesh.
+            triangles(numpy array T x 3): where T.
         Constructor
         '''
         if file_name is not None:
@@ -218,6 +221,12 @@ class Mesh(object):
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
 
+    def point_cloud_to_mesh_faces(self):
+        '''Determine the faces each point of a point_cloud belongs to.
+        TODO
+        '''
+        pass
+
     def linear_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
         reside inside the meshe's triangles.
@@ -241,17 +250,26 @@ class Mesh(object):
 
         if len(v_func) != self.num_vertices:
             raise ValueError('Provided vertex function has inappropriate dimensions. ')
+	
+	    A = self.vertices[self.triangles[faces_of_key_points, 0], :]
+       	B = self.vertices[self.triangles[faces_of_key_points, 1], :]
+       	C = self.vertices[self.triangles[faces_of_key_points, 2], :]
+ 		
+			
+		# Triangle (A,B,C)	
+		totalA = np.absolute(np.cross(A-B,A-C))	
+		# Triangle (key_points,B,C)
+		coA = np.absolute(np.cross(key_points - B, B - C)) / totalA 
+		# Triangle (A,key_points,C)
+		coB = np.absolute(np.cross(key_points - A, A - C)) / totalA 
+		# Triangle (A,B,key_points)
+		coC = np.absolute(np.cross( A - B, A - key_points)) / totalA
+       
 
-		def area_triangle_based_vertex(v1,v2,v3):
-			""" 
-				AB = [v1]
-			"""
-		def barycentric_interpolation(targetpoint,v1,v2,v3):
-					
-        tr_func = np.zeros((self.num_triangles, 1))
+		tr_func = np.zeros((self.num_triangles, 1))
         for i, tr in enumerate(self.triangles):
             v1, v2, v3 = tr
-            tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
+            tr_func[i] = coA * v_func[v1] + coB * v_func[v2] + v_func[v3]
         return tr_func
 
     def normals_of_vertices(self, weight='areas', normalize=False):
