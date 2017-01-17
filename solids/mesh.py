@@ -34,6 +34,9 @@ class Mesh(object):
     '''
     def __init__(self, vertices=None, triangles=None, file_name=None):
         '''
+        Args:
+            vertices (numpy array N x 3): where N is the number of vertices of the underlying mesh.
+            triangles(numpy array T x 3): where T.
         Constructor
         '''
         if file_name is not None:
@@ -217,6 +220,12 @@ class Mesh(object):
             v1, v2, v3 = tr
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
+
+    def point_cloud_to_mesh_faces(self):
+        '''Determine the faces each point of a point_cloud belongs to.
+        TODO
+        '''
+        pass
 
     def linear_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
