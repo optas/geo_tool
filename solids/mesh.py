@@ -241,6 +241,13 @@ class Mesh(object):
 
         if len(v_func) != self.num_vertices:
             raise ValueError('Provided vertex function has inappropriate dimensions. ')
+
+		def area_triangle_based_vertex(v1,v2,v3):
+			""" 
+				AB = [v1]
+			"""
+		def barycentric_interpolation(targetpoint,v1,v2,v3):
+					
         tr_func = np.zeros((self.num_triangles, 1))
         for i, tr in enumerate(self.triangles):
             v1, v2, v3 = tr
