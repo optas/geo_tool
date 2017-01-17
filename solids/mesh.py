@@ -227,18 +227,10 @@ class Mesh(object):
         '''
         pass
 
-    def linear_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
+    def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
-        reside inside the meshe's triangles.
+        reside inside the mesh triangles.
 
-        TODO: Lin currently it just sums the values of the vertices on each triangle. For barycentric-coordinates
-        see this:
-        r = np.random.rand(n_samples, 2)
-        A = self.vertices[self.triangles[faces_of_key_points, 0], :]
-        B = self.vertices[self.triangles[faces_of_key_points, 1], :]
-        C = self.vertices[self.triangles[faces_of_key_points, 2], :]
-        P = (1 - np.sqrt(r[:, 0:1])) * A + np.sqrt(r[:, 0:1]) * (1 - r[:, 1:]) * B + \
-            np.sqrt(r[:, 0:1]) * r[:, 1:] * C
         Args:
             v_func (num_vertices x 1 numpy array).
             key_points  (M x 3 numpy array): coordinates of 3D points.
@@ -250,26 +242,23 @@ class Mesh(object):
 
         if len(v_func) != self.num_vertices:
             raise ValueError('Provided vertex function has inappropriate dimensions. ')
-	
-	    A = self.vertices[self.triangles[faces_of_key_points, 0], :]
-       	B = self.vertices[self.triangles[faces_of_key_points, 1], :]
-       	C = self.vertices[self.triangles[faces_of_key_points, 2], :]
- 		
-			
-		# Triangle (A,B,C)	
-		totalA = np.absolute(np.cross(A-B,A-C))	
-		# Triangle (key_points,B,C)
-		coA = np.absolute(np.cross(key_points - B, B - C)) / totalA 
-		# Triangle (A,key_points,C)
-		coB = np.absolute(np.cross(key_points - A, A - C)) / totalA 
-		# Triangle (A,B,key_points)
-		coC = np.absolute(np.cross( A - B, A - key_points)) / totalA
-       
-		num_key_points = len(key_points)
-		tr_func = np.zeros((num_key_points, 1)) 
-		tr_func = coA * v_func[self.triangles[face_of_key_points,0]] + coB * v_func[self.triangles[face_of_key_points,1]] + coC * v_func[self.triangles[face_of_key_points,2]]  
-        
-		return tr_func
+
+        A = self.vertices[self.triangles[faces_of_key_points, 0], :]    # 1st Vertex of each referenced triangle.
+        B = self.vertices[self.triangles[faces_of_key_points, 1], :]
+        C = self.vertices[self.triangles[faces_of_key_points, 2], :]
+
+        total_area = l2_norm(np.cross(A - B, A - C), axis=1)   # 2 Times area of each referenced triangle.
+
+        # Barycentric Coefficients of the three 'barycentric' triangles in each triangle (i.e. the ratio of their areas to the total_area)
+        c_0 = l2_norm(np.cross(key_points - B, B - C), axis=1) / total_area
+        c_1 = l2_norm(np.cross(key_points - A, A - C), axis=1) / total_area
+        c_2 = l2_norm(np.cross(key_points - A, A - B), axis=1) / total_area
+
+        vf_0 = v_func[self.triangles[faces_of_key_points, 0]]
+        vf_1 = v_func[self.triangles[faces_of_key_points, 1]]
+        vf_2 = v_func[self.triangles[faces_of_key_points, 2]]
+        res = (c_0 * vf_0) + (c_1 * vf_1) + (c_2 * vf_2)
+        return res
 
     def normals_of_vertices(self, weight='areas', normalize=False):
         '''Computes the outward normal at each vertex by adding the weighted normals of each triangle a
