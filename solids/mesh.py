@@ -265,12 +265,11 @@ class Mesh(object):
 		# Triangle (A,B,key_points)
 		coC = np.absolute(np.cross( A - B, A - key_points)) / totalA
        
-
-		tr_func = np.zeros((self.num_triangles, 1))
-        for i, tr in enumerate(self.triangles):
-            v1, v2, v3 = tr
-            tr_func[i] = coA * v_func[v1] + coB * v_func[v2] + v_func[v3]
-        return tr_func
+		num_key_points = len(key_points)
+		tr_func = np.zeros((num_key_points, 1)) 
+		tr_func = coA * v_func[self.triangles[face_of_key_points,0]] + coB * v_func[self.triangles[face_of_key_points,1]] + coC * v_func[self.triangles[face_of_key_points,2]]  
+        
+		return tr_func
 
     def normals_of_vertices(self, weight='areas', normalize=False):
         '''Computes the outward normal at each vertex by adding the weighted normals of each triangle a
