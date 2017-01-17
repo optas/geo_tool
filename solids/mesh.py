@@ -33,11 +33,14 @@ class Mesh(object):
     loading and plotting utilities.
     '''
     def __init__(self, vertices=None, triangles=None, file_name=None):
-        '''
+        '''Mesh Constructor.
         Args:
-            vertices (numpy array N x 3): where N is the number of vertices of the underlying mesh.
-            triangles(numpy array T x 3): where T.
-        Constructor
+            vertices (N x 3 numpy array): where N is the number of vertices of the underlying mesh.
+            triangles (T x 3 numpy array): where T is the number of triangles of the underlying mesh.
+            Each line specifies the 3 vertices that that the particular triangle references in the
+            \'vertices\' list.
+            file_name (optional, String): file name of an .obj or .off file. If given, the mesh will be
+            loaded from this file.
         '''
         if file_name is not None:
             self.vertices, self.triangles = io.load_mesh_from_file(file_name)[:2]
@@ -298,7 +301,7 @@ class Mesh(object):
         self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
         return self
 
-    def sample_faces(self, n_samples, at_least_one=True, seed=0):
+    def sample_faces(self, n_samples, at_least_one=True, seed=None):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
 
@@ -328,7 +331,9 @@ class Mesh(object):
         n_samples_per_face = n_samples_per_face.astype(np.int)
         n_samples_s = int(np.sum(n_samples_per_face))
 
-        np.random.seed(seed)
+        if seed is not None:
+            np.random.seed(seed)
+
         # Control for float truncation (breaks the area analogy sampling)
         diff = n_samples_s - n_samples
         indices = np.arange(self.num_triangles)
