@@ -11,6 +11,7 @@ import math
 import scipy.sparse as sparse
 from scipy.sparse.linalg import eigs
 
+from general_tools.rla.one_d_transforms import smooth_normal_outliers, find_non_homogeneous_vectors
 from .. utils import linalg_utils as utils
 
 
@@ -27,11 +28,9 @@ def fiedler_of_component_spectra(in_mesh, in_lb, thres):
 
 
 def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_horizon, min_nodes=None, min_eigs=None, max_eigs=None):
-    
     spectra, multi_cc = in_lb.multi_component_spectra(in_mesh, area_type, percent_of_eigs,
                                                       min_nodes=min_nodes, min_eigs=min_eigs, max_eigs=max_eigs)
     n_cc = len(multi_cc)
-    
     hks_signature = np.zeros((in_mesh.num_vertices, time_horizon))
     aggregate_color = np.zeros((in_mesh.num_vertices, ))
 
@@ -46,15 +45,15 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
             evals = evals[pos_index]
             evecs = evecs[pos_index, :]
             evecs = np.around(evecs, 2)
-            utils.smooth_normal_outliers(evecs, 3)
-            index = utils.non_homogeneous_vectors(evecs, 0.95)
+            smooth_normal_outliers(evecs, 3)
+            index = find_non_homogeneous_vectors(evecs, 0.95)
             if len(index) >= 2:
                 evecs = evecs[index, :]
                 evals = evals[index] + 1        # Add 1 to make the division on time_samples strictly decreasing
                 ts = hks_time_sample_generator(evals[0], evals[-1], time_horizon)
                 sig = heat_kernel_signature(evals, evecs, ts)
-                sig = sig / utils.l2_norm(sig, axis=0)                
-                hks_signature[nodes,:] = sig 
+                sig = sig / utils.l2_norm(sig, axis=0)
+                hks_signature[nodes, :] = sig
                 magic_color = utils.scale(np.sum(sig, 1))
                 aggregate_color[nodes] = magic_color.reshape(len(nodes), 1)
 
@@ -62,7 +61,6 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
 
 
 def gaussian_curvature(in_mesh):
-    # TODO: Use Gauss-Bonne theorem to compute the Genus.
     acc_map = in_mesh.triangles.ravel()
     angles = in_mesh.angles_of_triangles().ravel()
     acc_array = np.bincount(acc_map, weights=angles)
@@ -77,14 +75,15 @@ def mean_curvature(in_mesh, laplace_beltrami):
     mean_curv = 0.5 * np.sum(N * (laplace_beltrami.W * in_mesh.vertices), 1)
     return mean_curv
 
+
 def heat_kernel_embedding(lb, n_eigs, n_time):
     evals, evecs = lb.spectra(n_eigs)
     pos_index = evals > 0
     evals = evals[pos_index]
     evecs = evecs[:, pos_index]
-    time_points = hks_time_sample_generator(evals[0], evals[-1], n_time)        
+    time_points = hks_time_sample_generator(evals[0], evals[-1], n_time)
     return heat_kernel_signature(evals, evecs.T, time_points)
-    
+
 
 def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     if len(evals) != evecs.shape[0]:
@@ -132,31 +131,31 @@ def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
     if verbose:
         print "Computing Wave Kernel Signature with %d eigen-pairs." % (len(evals),)
-     
+
     n = evecs.shape[1]  # Number of nodes.
     e = math.exp(1)
     log = np.log
-    signatures        = np.empty((n, len(energies)))
-            
+    signatures = np.empty((n, len(energies)))
+
     squared_evecs = np.square(evecs)
     squared_evecs = np.transpose(squared_evecs)
     sigma = 2 * (sigma**2)
     for t, en in enumerate(energies):
-        interm = e ** (-1 * ( ( (en - log(evals))**2) / sigma))
-        norm_factor = 1 /np.sum(interm)
-        for i in xrange (n):
+        interm = e ** (-1 * (((en - log(evals))**2) / sigma))
+        norm_factor = 1 / np.sum(interm)
+        for i in xrange(n):
             signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
 
     assert(np.alltrue(signatures >= 0))
     return signatures
 
 
-def wks_energy_generator(minEval, maxEval, timePoints, shrink=1):
-    emin = math.log(minEval)   
+def wks_energy_generator(min_eval, max_eval, time_points, shrink=1):
+    emin = math.log(min_eval)
     if shrink != 1:
-        emax = math.log(maxEval) / float(shrink)
+        emax = math.log(max_eval) / float(shrink)
     else:
-        emax = math.log(maxEval)
+        emax = math.log(max_eval)
 
     emin = abs(emin)
     emax = abs(emax)
@@ -165,35 +164,35 @@ def wks_energy_generator(minEval, maxEval, timePoints, shrink=1):
         print "Warning: too much shrink. - Will be set manually."
         emax = emin + 0.05 * emin
 
-    delta = (emax - emin) / timePoints
+    delta = (emax - emin) / time_points
     sigma = 10 * delta
 
     res = [emin]
-    for _ in xrange(1, timePoints):
+    for _ in xrange(1, time_points):
         res.append(res[-1] + delta)
     assert(utils.is_increasing(res))
     return res, sigma
 
 
 def merge_component_spectra(in_mesh, in_lb, percent_of_eigs, merger=np.sum):
-        spectra, multi_cc =  in_lb.multi_component_spectra(in_mesh, percent=percent_of_eigs)            
+        spectra, multi_cc = in_lb.multi_component_spectra(in_mesh, percent=percent_of_eigs)
         n_cc = len(multi_cc)
-        signature = np.zeros((in_mesh.num_vertices, 1))        
+        signature = np.zeros((in_mesh.num_vertices, 1))
         for i in xrange(n_cc):
-            nodes         = multi_cc[i]            
-            if spectra[i]:               
-                magic_color = merger(spectra[i][1]**2, axis=1)                                                
+            nodes = multi_cc[i]
+            if spectra[i]:
+                magic_color = merger(spectra[i][1]**2, axis=1)
                 signature[nodes] = magic_color.reshape(len(nodes), 1)
-        return signature[:,0]
+        return signature[:, 0]
 
 
 def extrinsic_laplacian(in_mesh, num_eigs):
     V = in_mesh.vertices
     E = in_mesh.undirected_edges()
-    vals = V[E[:,1]]
-    Wx = sparse.csr_matrix((vals[:,0], (E[:,0], E[:,1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
-    Wy = sparse.csr_matrix((vals[:,1], (E[:,0], E[:,1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
-    Wz = sparse.csr_matrix((vals[:,2], (E[:,0], E[:,1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
+    vals = V[E[:, 1]]
+    Wx = sparse.csr_matrix((vals[:, 0], (E[:, 0], E[:, 1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
+    Wy = sparse.csr_matrix((vals[:, 1], (E[:, 0], E[:, 1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
+    Wz = sparse.csr_matrix((vals[:, 2], (E[:, 0], E[:, 1])), shape=(in_mesh.num_vertices, in_mesh.num_vertices))
     _, evecsx = eigs(Wx, num_eigs, which='LM')
     _, evecsy = eigs(Wy, num_eigs, which='LM')
     _, evecsz = eigs(Wz, num_eigs, which='LM')

@@ -9,7 +9,6 @@ Created on June 14, 2016
 import numpy as np
 import scipy.sparse as sps
 import warnings
-from scipy.stats import mode
 from numpy.linalg import matrix_rank
 
 l2_norm = np.linalg.norm
@@ -101,27 +100,6 @@ def order_of_elements_after_deletion(num_elements, delete_index):
     init_list = np.arange(num_elements)
     after_del = np.delete(init_list, delete_index)
     return {key: i for i, key in enumerate(after_del)}
-
-
-def non_homogeneous_vectors(array, thres):
-    index = []
-    n = float(array.shape[1])
-    for i, vec in enumerate(array):
-        frac = mode(vec)[1][0] / n
-        if frac < thres:
-            index.append(i)
-    return index
-
-
-def smooth_normal_outliers(array, dev):
-    '''In each row of array, finds outlier elements transforms their values. An outlier in row[i], is any
-    element of that row that is in magnitude bigger than `dev` times \sigma[i] + \mu[i], where ...
-    '''
-    stds = np.std(array, axis=1)
-    means = np.mean(array, axis=1)
-    for i in xrange(array.shape[0]):
-        outliers = abs(array[i]) > dev * stds[i] + means[i]
-        array[i, outliers] = means[i]
 
 
 def are_coplanar(points):

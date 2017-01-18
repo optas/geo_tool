@@ -12,7 +12,6 @@ from scipy import sparse
 from scipy.sparse.linalg import eigs
 from math import ceil
 
-
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import l2_norm
 from .. solids import mesh_cleaning as cleaning
@@ -98,8 +97,7 @@ class Laplace_Beltrami(object):
     @staticmethod
     def cotangent_laplacian(in_mesh):
         '''Computes the cotangent laplacian weight matrix. Also known as the stiffness matrix.
-        Output:
-            W (symmetric).
+        Output: a PSD matrix.
         '''
         T = in_mesh.triangles
         angles = in_mesh.angles_of_triangles()
@@ -113,8 +111,5 @@ class Laplace_Beltrami(object):
         if utils.is_symmetric(W, tolerance=10e-5) == False:
             warnings.warn('Cotangent matrix is not symmetric within epsilon: %f' % (10e-5,))
             W /= 0.5
-            W = W + W.T     # TODO: - make optional
-
-        assert(utils.is_finite(W))
-        assert(utils.is_symmetric(W, 0.001))
+            W = W + W.T
         return W
