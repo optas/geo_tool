@@ -9,8 +9,14 @@ Created on December 8, 2016
 
 import copy
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import warnings
+
+try:
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+except:
+    warnings.warn('Pyplot library is not working correctly. Some graphics utilities will be disabled.')
+
 
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils

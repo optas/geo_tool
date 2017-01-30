@@ -15,7 +15,7 @@ import sys
 import numpy as np
 import os.path as osp
 from scipy import spatial
-  
+
 git_path = '/Users/optas/Documents/Git_Repos/'
 sys.path.insert(0, git_path)
 
