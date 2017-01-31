@@ -368,6 +368,25 @@ class Mesh(object):
         vz = v[:, permutation[2]].reshape(nv, 1)
         self.vertices = np.hstack((vx, vy, vz))
 
+    def volume(self):
+        '''
+        Estimates the volume of the mesh. The estimate is correct for meshes with no overlapping or intersecting triangles.
+        See: http://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
+        '''
+        V = self.vertices
+        T = self.triangles
+        P1 = V[T[:, 0], :]
+        P2 = V[T[:, 1], :]
+        P3 = V[T[:, 2], :]
+        v321 = P3[:, 0] * P2[:, 1] * P1[:, 2]
+        v231 = P2[:, 0] * P3[:, 1] * P1[:, 2]
+        v312 = P3[:, 0] * P1[:, 1] * P2[:, 2]
+        v132 = P1[:, 0] * P3[:, 1] * P2[:, 2]
+        v213 = P2[:, 0] * P1[:, 1] * P3[:, 2]
+        v123 = P1[:, 0] * P2[:, 1] * P3[:, 2]
+        return (1.0 / 6.0) * np.sum(-v321 + v231 + v312 - v132 - v213 + v123)
+#         return (1.0 / 6.0) * np.sum((np.cross(P2, P3) * P1))  # Faster but a bit more unstable version.
+
     @staticmethod
     def __decorate_mesh_with_triangle_color(mesh_plot, triangle_function):   # TODO-P do we really need this to be static?
         mesh_plot.mlab_source.dataset.cell_data.scalars = triangle_function
@@ -388,6 +407,7 @@ class Mesh(object):
         Returns:
             N           -   (num_of_triangles x 3) an array containing the outward normals of all the triangles.
         '''
+        # TODO See this: https://www.mathworks.com/matlabcentral/fileexchange/5355-toolbox-graph/content/toolbox_graph/compute_normal.m
         N = np.cross(V[T[:, 0], :] - V[T[:, 1], :], V[T[:, 0], :] - V[T[:, 2], :])
         if normalize:
             row_norms = l2_norm(N, axis=1)
