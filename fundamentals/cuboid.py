@@ -7,6 +7,7 @@ Created on December 8, 2016
 '''
 
 import numpy as np
+import warnings
 from .. utils import linalg_utils as utils
 l2_norm = utils.l2_norm
 
@@ -19,19 +20,45 @@ class Cuboid(object):
     def __init__(self, extrema):
         '''
         Constructor.
-        extrema is a numpy array containing 6 non-negative integers [xmin, ymin, zmin, xmax, ymax, zmax].
+            Args: extrema (numpy array) containing 6 non-negative integers [xmin, ymin, zmin, xmax, ymax, zmax].
         '''
         self.extrema = extrema
+        self.corners = self._corner_points()
+
+    @property
+    def extrema(self):
+        return self._extrema
+
+    @extrema.setter
+    def extrema(self, value):
+        self._extrema = value
+        [xmin, ymin, zmin, xmax, ymax, zmax] = self._extrema
+        if xmax == xmin or zmin == zmax or ymax == ymin:
+            warnings.warn('Degenerate Cuboid was specified (its volume and/or area are zero).')
+        if xmin > xmax or ymin > ymax or zmin > zmax:
+            raise ValueError('Check extrema of cuboid.')
+
+    def _corner_points(self):
+        [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
+        c1 = np.array([xmin, ymin, zmin])
+        c2 = np.array([xmax, ymin, zmin])
+        c3 = np.array([xmax, ymax, zmin])
+        c4 = np.array([xmin, ymax, zmin])
+        c5 = np.array([xmin, ymin, zmax])
+        c6 = np.array([xmax, ymin, zmax])
+        c7 = np.array([xmax, ymax, zmax])
+        c8 = np.array([xmin, ymax, zmax])
+        return np.vstack([c1, c2, c3, c4, c5, c6, c7, c8])
 
     def get_extrema(self):
         ''' Syntactic sugar to get the extrema property into separate variables.
         '''
-        c = self.corners
-        return c[0], c[1], c[2], c[3], c[4], c[5]
+        e = self.extrema
+        return e[0], e[1], e[2], e[3], e[4], e[5]
 
     def volume(self):
-        c = self.corners
-        return (c[3] - c[0]) * (c[4] - c[1]) * (c[5] - c[2])
+        [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
+        return (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
 
     def intersection_with(self, other):
         [sxmin, symin, szmin, sxmax, symax, szmax] = self.get_extrema()
@@ -46,25 +73,12 @@ class Cuboid(object):
 
         return inter
 
-    def corner_points(self):
-        [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
-        c1 = np.array([xmin, ymin, zmin])
-        c2 = np.array([xmax, ymin, zmin])
-        c3 = np.array([xmax, ymax, zmin])
-        c4 = np.array([xmin, ymax, zmin])
-        c5 = np.array([xmin, ymin, zmax])
-        c6 = np.array([xmax, ymin, zmax])
-        c7 = np.array([xmax, ymax, zmax])
-        c8 = np.array([xmin, ymax, zmax])
-        return np.vstack([c1, c2, c3, c4, c5, c6, c7, c8])
-
     def barycenter(self):
-        corners = self.corner_points()
-        n_corners = corners.shape[0]
-        return np.sum(corners, axis=0) / n_corners
+        n_corners = self.corners.shape[0]
+        return np.sum(self.corners, axis=0) / n_corners
 
     def faces(self):
-        corners = self.corner_points()
+        corners = self.corners
         [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
         xmin_f = corners[corners[:, 0] == xmin, :]
         xmax_f = corners[corners[:, 0] == xmax, :]
@@ -151,7 +165,7 @@ class Cuboid(object):
             axis - (matplotlib.axes.Axes) where the cuboid will be drawn.
             c - (String) specifying the color of the cuboid. Must be valid for matplotlib.pylab.plot
         '''
-        corners = self.corner_points()
+        corners = self.corners
         if axis is not None:
             axis.plot([corners[0, 0], corners[1, 0]], [corners[0, 1], corners[1, 1]], zs=[corners[0, 2], corners[1, 2]], c=c)
             axis.plot([corners[1, 0], corners[2, 0]], [corners[1, 1], corners[2, 1]], zs=[corners[1, 2], corners[2, 2]], c=c)
@@ -165,6 +179,7 @@ class Cuboid(object):
             axis.plot([corners[1, 0], corners[5, 0]], [corners[1, 1], corners[5, 1]], zs=[corners[1, 2], corners[5, 2]], c=c)
             axis.plot([corners[2, 0], corners[6, 0]], [corners[2, 1], corners[6, 1]], zs=[corners[2, 2], corners[6, 2]], c=c)
             axis.plot([corners[3, 0], corners[7, 0]], [corners[3, 1], corners[7, 1]], zs=[corners[3, 2], corners[7, 2]], c=c)
+            return axis.figure
         else:
             ValueError('NYI')
 

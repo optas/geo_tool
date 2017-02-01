@@ -224,12 +224,6 @@ class Mesh(object):
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
 
-    def point_cloud_to_mesh_faces(self):
-        '''Determine the faces each point of a point_cloud belongs to.
-        TODO
-        '''
-        pass
-
     def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
         reside inside the mesh triangles.
