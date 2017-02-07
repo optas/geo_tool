@@ -25,6 +25,9 @@ class Cuboid(object):
         self.extrema = extrema
         self.corners = self._corner_points()
 
+    def __str__(self):
+        return 'Cuboid with  [xmin, ymin, zmin, xmax, ymax, zmax] coordinates = %s.' % (str(self.extrema), )
+
     @property
     def extrema(self):
         return self._extrema

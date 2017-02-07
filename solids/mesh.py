@@ -12,6 +12,7 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
+import cPickle
 
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
@@ -48,6 +49,9 @@ class Mesh(object):
             self.vertices = vertices
             self.triangles = triangles
 
+    def __str__(self):
+        return 'Mesh with %d vertices and %d triangles.' % (self.num_vertices, self.num_triangles)
+
     @property
     def vertices(self):
         return self._vertices
@@ -70,11 +74,12 @@ class Mesh(object):
         if np.max(self._triangles) > self.num_vertices - 1 or np.min(self._triangles) < 0:
             raise ValueError('Triangles referencing non-vertices.')
 
-    def __str__(self):
-        return 'Mesh with %d vertices and %d triangles.' % (self.num_vertices, self.num_triangles)
-
     def copy(self):
         return copy.deepcopy(self)
+
+    def save(self, file_out):
+        with open(file_out, "w") as f_out:
+            cPickle.dump(self, f_out)
 
     def plot(self, triangle_function=np.array([]), vertex_function=np.array([]), show=True, *args, **kwargs):
         if vertex_function.any() and triangle_function.any():
@@ -407,3 +412,11 @@ class Mesh(object):
             row_norms = l2_norm(N, axis=1)
             N = (N.T / row_norms).T
         return N
+
+    @staticmethod
+    def load(in_file):
+        with open(in_file, 'r') as f_in:
+            res = cPickle.load(f_in)
+        return res
+
+    
