@@ -147,7 +147,9 @@ def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.floa
 
     data = np.loadtxt(file_name, dtype=dtype, comments=comments, delimiter=delimiter)
     if permute is not None:
-        data = np.vstack([data[:, permute[0]], data[:, permute[1]], data[:, permute[2]]]).T  # TODO - do via numpy
+        if len(permute) != 3 or not np.all(np.equal(sorted(permute), np.array([0, 1, 2]))):
+            raise ValueError('Permutation.')
+        data = data[:, permute]
     return data
 
 

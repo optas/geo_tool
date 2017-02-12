@@ -418,5 +418,3 @@ class Mesh(object):
         with open(in_file, 'r') as f_in:
             res = cPickle.load(f_in)
         return res
-
-    

@@ -8,8 +8,9 @@ Created on December 8, 2016
 
 
 import copy
-import numpy as np
+import cPickle
 import warnings
+import numpy as np
 
 try:
     import matplotlib.pyplot as plt
@@ -52,8 +53,18 @@ class Point_Cloud(object):
     def __str__(self):
         return 'Point Cloud with %d points.' % (self.num_points)
 
+    def save(self, file_out):
+        with open(file_out, "w") as f_out:
+            cPickle.dump(self, f_out)
+
     def copy(self):
         return copy.deepcopy(self)
+
+    def permute_points(self, permutation):
+        if len(permutation) != 3 or not np.all(np.equal(sorted(permutation), np.array([0, 1, 2]))):
+            raise ValueError()
+        self.points = self.points[:, permutation]
+        return self
 
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)
@@ -97,3 +108,9 @@ class Point_Cloud(object):
         if show:
             plt.show()
         return fig
+
+    @staticmethod
+    def load(in_file):
+        with open(in_file, 'r') as f_in:
+            res = cPickle.load(f_in)
+        return res
