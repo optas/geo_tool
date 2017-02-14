@@ -66,6 +66,12 @@ class Point_Cloud(object):
         self.points = self.points[:, permutation]
         return self
 
+    def sample(self, n_samples, replacement=False):
+        if n_samples > self.num_points:
+            replacement = True
+        rindex = np.random.choice(self.num_points, n_samples, replace=replacement)
+        return Point_Cloud(points=self.points[rindex, :])
+
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)
 
