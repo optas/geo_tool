@@ -79,11 +79,11 @@ class Point_Cloud(object):
         self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
         return self
 
-    def plot(self, show=True, in_u_sphere=False, *args, **kwargs):
+    def plot(self, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
         x = self.points[:, 0]
         y = self.points[:, 1]
         z = self.points[:, 2]
-        return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, in_u_sphere=in_u_sphere, *args, **kwargs)
+        return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, in_u_sphere=in_u_sphere, axis=axis, *args, **kwargs)
 
     def barycenter(self):
         n_points = self.points.shape[0]
@@ -107,9 +107,14 @@ class Point_Cloud(object):
         return points
 
     @staticmethod
-    def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, *args, **kwargs):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+    def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
+        if axis is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+        else:
+            ax = axis
+            fig = axis
+
         ax.scatter(x, y, z, *args, **kwargs)
 
         if in_u_sphere:
