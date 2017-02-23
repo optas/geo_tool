@@ -70,7 +70,10 @@ class Point_Cloud(object):
         if n_samples > self.num_points:
             replacement = True
         rindex = np.random.choice(self.num_points, n_samples, replace=replacement)
-        return Point_Cloud(points=self.points[rindex, :])
+        return Point_Cloud(points=self.points[rindex, :]), rindex
+
+    def apply_mask(self, bool_mask):
+        return Point_Cloud(self.points[bool_mask, :])
 
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)

@@ -245,49 +245,51 @@ def load_mesh_from_file(file_name):
 
 def write_off(out_file, vertices, faces, vertex_color=None, face_color=None):
     nv = len(vertices)
-    nf,  tf = faces.shape
+    nf, tf = faces.shape
     if tf != 3:
-        raise ValueError('Not Implemented Yet.') 
-    
+        raise ValueError('Not Implemented Yet.')
+
     vc = not(vertex_color is None)
-    fc = not(face_color   is None)
-    
+    fc = not(face_color is None)
+
     if vc and fc:
         raise ValueError('Color can be specified for the faces or the vertices - not both.')
-                                       
+
     with open(out_file, 'w') as fout:
         if vc or fc:
             fout.write('COFF\n')
         else:
             fout.write('OFF\n')
-            
-        fout.write('%d %d 0\n' % (nv, nf))  # The third number is supposed to be the num of edges - but is set to 0 as per common practice. 
-        
+
+        fout.write('%d %d 0\n' % (nv, nf))  # The third number is supposed to be the num of edges - but is set to 0 as per common practice.
+
         if vc:
-            c = vertex_color 
+            c = vertex_color
             for i, v in enumerate(vertices):
                 fout.write('%f %f %f %f %f %f %f\n' % (v[0], v[1], v[2], c[i, 0], c[i, 1], c[i, 2], c[i, 3]))
-            for f in faces:            
+            for f in faces:
                 fout.write('%d %d %d %d\n' % (tf, f[0], f[1], f[2]))
         elif fc:
             for v in vertices:
                 fout.write('%f %f %f\n' % (v[0], v[1], v[2]))
-            c = face_color 
+            c = face_color
             for i, f in enumerate(faces):
-                fout.write('%d %d %d %d %f %f %f %f\n' % (tf, f[0], f[1], f[2], c[i, 0], c[i, 1], c[i, 2], c[i, 3] ))
+                fout.write('%d %d %d %d %f %f %f %f\n' % (tf, f[0], f[1], f[2], c[i, 0], c[i, 1], c[i, 2], c[i, 3]))
         else:
             for v in vertices:
                 fout.write('%f %f %f\n' % (v[0], v[1], v[2]))
-            for f in faces:            
-                fout.write('%d %d %d %d\n' % (tf, f[0], f[1], f[2]))      
-                           
+            for f in faces:
+                fout.write('%d %d %d %d\n' % (tf, f[0], f[1], f[2]))
+
+
 def write_pixel_list_to_txt(x_coord, y_coord, outfile):
-    pixels = np.vstack([x_coord, y_coord]) 
+    pixels = np.vstack([x_coord, y_coord])
     pixels = np.transpose(pixels)        # Write each pixel pair on each own line.
     np.savetxt(outfile, pixels, fmt='%d')
 
+
 def read_pixel_list_from_txt(in_file):
-    pixels  = np.loadtxt(in_file, dtype=np.int32)
+    pixels = np.loadtxt(in_file, dtype=np.int32)
     x_coord = pixels[:, 0]
     y_coord = pixels[:, 1]
     return x_coord, y_coord
