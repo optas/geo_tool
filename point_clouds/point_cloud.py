@@ -11,6 +11,7 @@ import copy
 import cPickle
 import warnings
 import numpy as np
+from sklearn.neighbors import NearestNeighbors
 
 try:
     import matplotlib.pyplot as plt
@@ -99,6 +100,12 @@ class Point_Cloud(object):
         lex_indices = np.lexsort(self.points.T, axis=axis)
         self.points = self.points[lex_indices, :]
         return self, lex_indices
+
+    def k_nearest_neighbors(self, k):
+        #     TODO: Add kwargs of sklearn function
+        nn = NearestNeighbors(n_neighbors=k + 1).fit(self.points)
+        distances, indices = nn.kneighbors(self.points)
+        return indices[:, 1:], distances[:, 1:]
 
     @staticmethod
     def center_points_in_unit_sphere(points):
