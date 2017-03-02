@@ -11,7 +11,12 @@ import copy
 import cPickle
 import warnings
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
+
+try:
+    from sklearn.neighbors import NearestNeighbors
+except:
+    warnings.warn('Sklearn library is not installed.')
+
 from scipy.linalg import eigh
 from numpy.matlib import repmat
 
@@ -109,7 +114,7 @@ class Point_Cloud(object):
         distances, indices = nn.kneighbors(self.points)
         return indices[:, 1:], distances[:, 1:]
 
-    def normals_lsq(self, k):
+    def normals_lsq(self, k, unit_norm=False):
         '''Least squares normal estimation from point clouds using PCA.
         Args:
                 k  (int) indicating how many neighbors the normal estimation is based upon.
@@ -129,6 +134,9 @@ class Point_Cloud(object):
             [L, E] = eigh(P)
             idx = np.argmin(L)
             N[i, :] = E[:, idx]
+        if unit_norm:
+            row_norms = np.linalg.norm(N, axis=1)
+            N = (N.T / row_norms).T
         return N
 
     @staticmethod
