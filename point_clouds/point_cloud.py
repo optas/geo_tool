@@ -12,6 +12,8 @@ import cPickle
 import warnings
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from scipy.linalg import eigh
+from numpy.matlib import repmat
 
 try:
     import matplotlib.pyplot as plt
@@ -106,6 +108,28 @@ class Point_Cloud(object):
         nn = NearestNeighbors(n_neighbors=k + 1).fit(self.points)
         distances, indices = nn.kneighbors(self.points)
         return indices[:, 1:], distances[:, 1:]
+
+    def normals_lsq(self, k):
+        '''Least squares normal estimation from point clouds using PCA.
+        Args:
+                k  (int) indicating how many neighbors the normal estimation is based upon.
+
+        DOI: H. Hoppe, T. DeRose, T. Duchamp, J. McDonald, and W. Stuetzle.
+        Surface reconstruction from unorganized points. In Proceedings of ACM Siggraph, pages 71:78, 1992.
+        '''
+        neighbors, _ = self.k_nearest_neighbors(k)
+        points = self.points
+        n_points = self.num_points
+        N = np.zeros([n_points, 3])
+        for i in xrange(n_points):
+            x = points[neighbors[i], :]
+            p_bar = (1.0 / k) * np.sum(x, axis=0)
+            P = (x - repmat(p_bar, k, 1))
+            P = (P.T).dot(P)
+            [L, E] = eigh(P)
+            idx = np.argmin(L)
+            N[i, :] = E[:, idx]
+        return N
 
     @staticmethod
     def center_points_in_unit_sphere(points):
