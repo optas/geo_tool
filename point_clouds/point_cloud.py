@@ -11,6 +11,7 @@ import copy
 import cPickle
 import warnings
 import numpy as np
+from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
 
 try:
     from sklearn.neighbors import NearestNeighbors
@@ -138,6 +139,11 @@ class Point_Cloud(object):
             row_norms = np.linalg.norm(N, axis=1)
             N = (N.T / row_norms).T
         return N
+
+    def save_as_ply(self, file_out):
+        vertex = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
+        el = PlyElement.describe(vertex, 'vertex')
+        PlyData([el]).write(file_out + '.ply')
 
     @staticmethod
     def center_points_in_unit_sphere(points):
