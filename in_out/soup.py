@@ -153,6 +153,16 @@ def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.floa
     return data
 
 
+def load_crude_point_cloud_with_normals(file_name, delimiter=' ', comments='#', dtype=np.float32):
+    '''
+    Input: file_name (string) of a file containing 3D points. Each line of the file
+    is expected to contain exactly one point with a normal vector. The x,y,z coordinates of the point are separated via the provided
+    delimiter character(s).
+    '''
+    data = np.loadtxt(file_name, dtype=dtype, comments=comments, delimiter=delimiter)
+    return data
+
+
 def load_annotation_of_points(file_name, data_format='shape_net'):
     '''
     Loads the annotation file that describes for every point of a point cloud which part it belongs too.

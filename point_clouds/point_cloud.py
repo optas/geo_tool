@@ -11,15 +11,13 @@ import copy
 import cPickle
 import warnings
 import numpy as np
-from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
+from scipy.linalg import eigh
+from numpy.matlib import repmat
 
 try:
     from sklearn.neighbors import NearestNeighbors
 except:
     warnings.warn('Sklearn library is not installed.')
-
-from scipy.linalg import eigh
-from numpy.matlib import repmat
 
 try:
     import matplotlib.pyplot as plt
@@ -27,7 +25,7 @@ try:
 except:
     warnings.warn('Pyplot library is not working correctly. Some graphics utilities will be disabled.')
 
-
+from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
 from .. in_out import soup as io
 from .. utils import linalg_utils as utils
 from .. fundamentals import Cuboid

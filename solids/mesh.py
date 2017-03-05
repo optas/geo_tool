@@ -367,6 +367,18 @@ class Mesh(object):
         vz = v[:, permutation[2]].reshape(nv, 1)
         self.vertices = np.hstack((vx, vy, vz))
 
+    def swap_axes_of_triangles(self, permutation):
+        t = self.triangles
+        nt = self.num_triangles
+        t0 = t[:, permutation[0]].reshape(nt, 1)
+        t1 = t[:, permutation[1]].reshape(nt, 1)
+        t2 = t[:, permutation[2]].reshape(nt, 1)
+        self.triangles = np.hstack((t0, t1, t2))
+
+    def swap_axes_of_vertices_and_triangles(self, permutation):
+        self.swap_axes_of_triangles(permutation)
+        self.swap_axes_of_vertices(permutation)
+
     def volume(self):
         '''
         Estimates the volume of the mesh. The estimate is correct for meshes with no overlapping or intersecting triangles.
