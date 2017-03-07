@@ -143,7 +143,6 @@ class Point_Cloud(object):
             vp = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
         else:
             values = np.hstack((self.points, normals))
-            print values.shape
             vp = np.array([(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4')])
 
         el = PlyElement.describe(vp, 'vertex')
