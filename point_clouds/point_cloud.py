@@ -138,8 +138,7 @@ class Point_Cloud(object):
             N = (N.T / row_norms).T
         return N
 
-    @staticmethod
-    def save_as_ply_test(self, file_out, normals=None):
+    def save_as_ply(self, file_out, normals=None):
         if normals is None:
             vp = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
         else:
