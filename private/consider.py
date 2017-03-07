@@ -13,6 +13,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d import Axes3D
 from mayavi import mlab as mayalab
 
+
 def plot_mesh_2(in_mesh, show=True, in_u_sphere=False):
     '''Alternative to plotting a mesh with matplotlib.
     Need to find way to colorize vertex/faces.'''
@@ -30,6 +31,7 @@ def plot_mesh_2(in_mesh, show=True, in_u_sphere=False):
         plt.show()
     else:
         return fig
+
 
 def plot_vector_field(points, vx, vy, vz):
     mayalab.quiver3d(points[:, 0], points[:, 1], points[:, 2], vx, vy, vz)
