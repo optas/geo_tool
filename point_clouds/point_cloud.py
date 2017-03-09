@@ -154,22 +154,21 @@ class Point_Cloud(object):
         points_test = points.copy()
         barycenter = np.sum(points, axis=0) / n_points
         points -= barycenter   # Center it in the origin.
-        max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
+        max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
         points /= max_dist * 2
-        trans_matrix = np.zeros([4,4])
-        trans_matrix[0,0] = 1.0 / max_dist * 2
-	trans_matrix[1,1] = 1.0 / max_dist * 2
-	trans_matrix[2,2] = 1.0 / max_dist * 2
-	trans_matrix[3,3] = 1.0
-	trans_matrix[3,0] = -1.0 / max_dist * 2 * barycenter[0]
-	trans_matrix[3,1] = -1.0 / max_dist * 2 * barycenter[1]
-        trans_matrix[3,2] = -1.0 / max_dist * 2 * barycenter[2]
-        points_test = np.dot(points.T,trans_matrix).T
-	print(points)
-        print(points_test)
- 	assert(points_test == points)
+
+        trans_matrix = np.zeros([4, 4])
+        trans_matrix[0, 0] = 1.0 / max_dist * 2
+        trans_matrix[1, 1] = 1.0 / max_dist * 2
+        trans_matrix[2, 2] = 1.0 / max_dist * 2
+        trans_matrix[3, 3] = 1.0
+        trans_matrix[3, 0] = -1.0 / max_dist * 2 * barycenter[0]
+        trans_matrix[3, 1] = -1.0 / max_dist * 2 * barycenter[1]
+        trans_matrix[3, 2] = -1.0 / max_dist * 2 * barycenter[2]
+        points_test = np.dot(points_test.T, trans_matrix).T
+        print np.allclose(points_test, points)
+
         if ret_transformation:
-            trans_matrix = None
             return points, trans_matrix
         else:
             return points
