@@ -85,9 +85,13 @@ class Point_Cloud(object):
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)
 
-    def center_in_unit_sphere(self):
-        self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
-        return self
+    def center_in_unit_sphere(self, ret_trans=False):
+        res = Point_Cloud.center_points_in_unit_sphere(self.points, ret_transformation=ret_trans)
+        self.points = res[0]
+        if ret_trans:
+            return self, res[1]
+        else:
+            return self
 
     def plot(self, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
         x = self.points[:, 0]
