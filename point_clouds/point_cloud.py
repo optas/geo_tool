@@ -149,13 +149,17 @@ class Point_Cloud(object):
         PlyData([el]).write(file_out + '.ply')
 
     @staticmethod
-    def center_points_in_unit_sphere(points):
+    def center_points_in_unit_sphere(points, ret_transformation=False):
         n_points = points.shape[0]
         barycenter = np.sum(points, axis=0) / n_points
         points -= barycenter   # Center it in the origin.
         max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
         points /= max_dist * 2
-        return points
+        if ret_transformation:
+            trans_matrix = None
+            return points, trans_matrix
+        else:
+            return points
 
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
