@@ -139,8 +139,7 @@ def load_wavefront_obj(file_name, vdtype=np.float32, tdtype=np.int32):
 
 
 def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.float32, permute=None):
-    '''
-    Input: file_name (string) of a file containing 3D points. Each line of the file
+    '''Input: file_name (string) of a file containing 3D points. Each line of the file
     is expected to contain exactly one point. The x,y,z coordinates of the point are separated via the provided
     delimiter character(s).
     '''
@@ -154,8 +153,7 @@ def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.floa
 
 
 def load_crude_point_cloud_with_normals(file_name, delimiter=' ', comments='#', dtype=np.float32):
-    '''
-    Input: file_name (string) of a file containing 3D points. Each line of the file
+    '''Input: file_name (string) of a file containing 3D points. Each line of the file
     is expected to contain exactly one point with a normal vector. The x,y,z coordinates of the point are separated via the provided
     delimiter character(s).
     '''
