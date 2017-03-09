@@ -85,13 +85,9 @@ class Point_Cloud(object):
     def bounding_box(self):
         return Cuboid.bounding_box_of_3d_points(self.points)
 
-    def center_in_unit_sphere(self, ret_trans=False):
-        res = Point_Cloud.center_points_in_unit_sphere(self.points, ret_transformation=ret_trans)
-        self.points = res[0]
-        if ret_trans:
-            return self, res[1]
-        else:
-            return self
+    def center_in_unit_sphere(self):
+        self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
+        return self
 
     def plot(self, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
         x = self.points[:, 0]
@@ -155,10 +151,23 @@ class Point_Cloud(object):
     @staticmethod
     def center_points_in_unit_sphere(points, ret_transformation=False):
         n_points = points.shape[0]
+        points_test = points.copy()
         barycenter = np.sum(points, axis=0) / n_points
         points -= barycenter   # Center it in the origin.
-        max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
+        max_dist = np.max(l2_norm(points, axis=1)) # Make max distance equal to one.
         points /= max_dist * 2
+        trans_matrix = np.zeros([4,4])
+        trans_matrix[0,0] = 1.0 / max_dist * 2
+	trans_matrix[1,1] = 1.0 / max_dist * 2
+	trans_matrix[2,2] = 1.0 / max_dist * 2
+	trans_matrix[3,3] = 1.0
+	trans_matrix[3,0] = -1.0 / max_dist * 2 * barycenter[0]
+	trans_matrix[3,1] = -1.0 / max_dist * 2 * barycenter[1]
+        trans_matrix[3,2] = -1.0 / max_dist * 2 * barycenter[2]
+        points_test = np.dot(points.T,trans_matrix).T
+	print(points)
+        print(points_test)
+ 	assert(points_test == points)
         if ret_transformation:
             trans_matrix = None
             return points, trans_matrix
