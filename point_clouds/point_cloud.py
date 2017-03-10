@@ -8,7 +8,7 @@ Created on December 8, 2016
 
 
 import copy
-import cPickle
+import pickle as pickler
 import warnings
 import numpy as np
 from scipy.linalg import eigh
@@ -62,7 +62,7 @@ class Point_Cloud(object):
 
     def save(self, file_out):
         with open(file_out, "w") as f_out:
-            cPickle.dump(self, f_out)
+            pickler.dump(self, f_out)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -195,5 +195,5 @@ class Point_Cloud(object):
     @staticmethod
     def load(in_file):
         with open(in_file, 'r') as f_in:
-            res = cPickle.load(f_in)
+            res = pickler.load(f_in)
         return res

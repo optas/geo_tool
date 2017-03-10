@@ -12,7 +12,8 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
-import cPickle
+
+import pickle as pickler
 
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
@@ -79,7 +80,7 @@ class Mesh(object):
 
     def save(self, file_out):
         with open(file_out, "w") as f_out:
-            cPickle.dump(self, f_out)
+            pickler.dump(self, f_out)
 
     def plot(self, triangle_function=np.array([]), vertex_function=np.array([]), show=True, *args, **kwargs):
         if vertex_function.any() and triangle_function.any():
@@ -428,5 +429,5 @@ class Mesh(object):
     @staticmethod
     def load(in_file):
         with open(in_file, 'r') as f_in:
-            res = cPickle.load(f_in)
+            res = pickler.load(f_in)
         return res
