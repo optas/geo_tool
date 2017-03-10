@@ -12,11 +12,7 @@ import copy
 import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
-
-try:
-    import cPickle as pickler
-except:
-    import pickle as pickler
+from six.moves import cPickle
 
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
@@ -82,8 +78,8 @@ class Mesh(object):
         return copy.deepcopy(self)
 
     def save(self, file_out):
-        with open(file_out, "w") as f_out:
-            pickler.dump(self, f_out, protocol=2)
+        with open(file_out, "wb") as f_out:
+            cPickle.dump(self, f_out, protocol=2)
 
     def plot(self, triangle_function=np.array([]), vertex_function=np.array([]), show=True, *args, **kwargs):
         if vertex_function.any() and triangle_function.any():
@@ -432,5 +428,5 @@ class Mesh(object):
     @staticmethod
     def load(in_file):
         with open(in_file, 'r') as f_in:
-            res = pickler.load(f_in)
+            res = cPickle.load(f_in)
         return res

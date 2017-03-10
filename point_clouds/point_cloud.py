@@ -12,11 +12,8 @@ import warnings
 import numpy as np
 from scipy.linalg import eigh
 from numpy.matlib import repmat
+from six.moves import cPickle
 
-try:
-    import cPickle as pickler
-except:
-    import pickle as pickler
 
 try:
     from sklearn.neighbors import NearestNeighbors
@@ -65,8 +62,8 @@ class Point_Cloud(object):
         return 'Point Cloud with %d points.' % (self.num_points)
 
     def save(self, file_out):
-        with open(file_out, "w") as f_out:
-            pickler.dump(self, f_out, protocol=2)
+        with open(file_out, "wb") as f_out:
+            cPickle.dump(self, f_out, protocol=2)
 
     def copy(self):
         return copy.deepcopy(self)
@@ -199,5 +196,5 @@ class Point_Cloud(object):
     @staticmethod
     def load(in_file):
         with open(in_file, 'r') as f_in:
-            res = pickler.load(f_in)
+            res = cPickle.load(f_in)
         return res
