@@ -8,11 +8,15 @@ Created on December 8, 2016
 
 
 import copy
-import pickle as pickler
 import warnings
 import numpy as np
 from scipy.linalg import eigh
 from numpy.matlib import repmat
+
+try:
+    import cPickle as pickler
+except:
+    import pickle as pickler
 
 try:
     from sklearn.neighbors import NearestNeighbors

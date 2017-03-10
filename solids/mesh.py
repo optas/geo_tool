@@ -13,7 +13,10 @@ import numpy as np
 from scipy import sparse as sp
 from numpy.matlib import repmat
 
-import pickle as pickler
+try:
+    import cPickle as pickler
+except:
+    import pickler
 
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
