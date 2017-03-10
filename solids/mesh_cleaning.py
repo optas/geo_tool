@@ -61,7 +61,7 @@ def clean_identical_triangles(self, verbose=False):
     new_tr = linalg_utils.unique_rows(self.triangles)
     if len(new_tr) != self.num_triangles:
         if verbose:
-            print 'Identical triangles were detected and are being deleted.'
+            print('Identical triangles were detected and are being deleted.')
         self.triangles = new_tr
     return self
 
@@ -85,7 +85,7 @@ def clean_duplicate_triangles(self, verbose=False):
     keep_list = _get_non_duplicate_triangles(self)
     if self.num_triangles != len(keep_list):
         if verbose:
-            print 'Duplicate triangles were detected and are being deleted.'
+            print('Duplicate triangles were detected and are being deleted.')
         self.triangles = self.triangles[keep_list, :]
     return self
 
@@ -97,7 +97,7 @@ def clean_degenerate_triangles(self, verbose=False):
         good_tr = A > 0
         if np.sum(good_tr) != self.num_triangles:
             if verbose:
-                print 'Deleting triangles with zero area.'
+                print('Deleting triangles with zero area.')
             self.triangles = self.triangles[good_tr, :]
     assert(all(self.area_of_triangles() > 0))
 
@@ -105,7 +105,7 @@ def clean_degenerate_triangles(self, verbose=False):
     bad_triangles = np.where((A == 0).any(axis=1))[0]
     if bad_triangles.any():
         if verbose:
-            print 'Deleting triangles containing angles that are 0 degrees.'
+            print('Deleting triangles containing angles that are 0 degrees.')
         keep = list(set(range(self.num_triangles)) - set(bad_triangles))
         self = filter_triangles(self, keep)
     return self
@@ -118,7 +118,7 @@ def clean_zero_area_vertices(self, verbose=False):
     bad_vert = np.where(A <= 0)[0]
     if bad_vert.any():
         if verbose:
-            print 'Deleting vertices with zero area.'
+            print('Deleting vertices with zero area.')
         keep_list = list(set(range(self.num_vertices)) - set(bad_vert))
         self = filter_vertices(self, keep_list)
     assert(all(self.area_of_vertices() > 0))
@@ -129,7 +129,7 @@ def clean_isolated_vertices(self, verbose=False):
     bad_vertices = isolated_vertices(self)
     if bad_vertices:
         if verbose:
-            print 'Deleting isolated vertices.'
+            print('Deleting isolated vertices.')
         keep_list = list(set(range(self.num_vertices)) - bad_vertices)
         self = filter_vertices(self, keep_list)
     return self
@@ -148,7 +148,7 @@ def clean_identical_vertices(self, verbose=False):
     check_list = [sorted(c) for c in eqc.values() if len(c) > 1]
     if check_list:
         if verbose:
-            print 'Duplicate vertices were detected and are being deleted.'
+            print('Duplicate vertices were detected and are being deleted.')
 
         keep_list = [min(v_id) for v_id in eqc.values()]
         T = self.triangles.ravel()
