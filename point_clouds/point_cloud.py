@@ -167,7 +167,7 @@ class Point_Cloud(object):
             trans_matrix[3, 1] = -1.0 / max_dist * 2 * barycenter[1]
             trans_matrix[3, 2] = -1.0 / max_dist * 2 * barycenter[2]
             points_test = np.dot(points_test.T, trans_matrix).T
-            print np.allclose(points_test, points)
+            print(np.allclose(points_test, points))
             return points, trans_matrix
         else:
             return points
