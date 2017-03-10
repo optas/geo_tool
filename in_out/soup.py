@@ -6,12 +6,19 @@ Created on June 14, 2016
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
 '''
 
-import cv2
-import re
+
+
 import os
+import warnings
+import re
 import numpy as np
 from glob import glob
 from .. external_code.python_plyfile.plyfile import PlyData
+
+try:
+    import cv2
+except:
+    warnings.warn('OpenCV library is not installed.')
 
 # TODO Break down in more in_out modules
 
