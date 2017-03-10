@@ -66,7 +66,7 @@ class Point_Cloud(object):
 
     def save(self, file_out):
         with open(file_out, "w") as f_out:
-            pickler.dump(self, f_out)
+            pickler.dump(self, f_out, protocol=2)
 
     def copy(self):
         return copy.deepcopy(self)

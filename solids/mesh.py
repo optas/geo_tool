@@ -83,7 +83,7 @@ class Mesh(object):
 
     def save(self, file_out):
         with open(file_out, "w") as f_out:
-            pickler.dump(self, f_out)
+            pickler.dump(self, f_out, protocol=2)
 
     def plot(self, triangle_function=np.array([]), vertex_function=np.array([]), show=True, *args, **kwargs):
         if vertex_function.any() and triangle_function.any():
