@@ -90,7 +90,7 @@ class Laplace_Beltrami(object):
                 feasible_k = min(k, num_nodes - 2)
                 E.append((Laplace_Beltrami(temp_mesh).spectra(feasible_k, area_type)))
             except:
-                print 'Component %d failed.' % (i)
+                print('Component {0} failed.'.format((i)))
                 E.append([])
         return E, cc_at_thres
 
