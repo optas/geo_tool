@@ -427,6 +427,6 @@ class Mesh(object):
 
     @staticmethod
     def load(in_file):
-        with open(in_file, 'r') as f_in:
+        with open(in_file, 'rb') as f_in:
             res = cPickle.load(f_in)
         return res

@@ -14,7 +14,6 @@ from scipy.linalg import eigh
 from numpy.matlib import repmat
 from six.moves import cPickle
 
-
 try:
     from sklearn.neighbors import NearestNeighbors
 except:
@@ -195,6 +194,6 @@ class Point_Cloud(object):
 
     @staticmethod
     def load(in_file):
-        with open(in_file, 'r') as f_in:
+        with open(in_file, 'rb') as f_in:
             res = cPickle.load(f_in)
         return res
