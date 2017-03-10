@@ -16,7 +16,7 @@ from numpy.matlib import repmat
 try:
     import cPickle as pickler
 except:
-    import picle as pickler
+    import pickle as pickler
 
 from .. utils import linalg_utils as utils
 from .. utils.linalg_utils import accumarray
