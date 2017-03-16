@@ -146,7 +146,8 @@ class Point_Cloud(object):
             vp = np.array([(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4')])
 
         el = PlyElement.describe(vp, 'vertex')
-        PlyData([el], text=binary).write(file_out + '.ply')
+        text = not binary
+        PlyData([el], text=text).write(file_out + '.ply')
 
     @staticmethod
     def center_points_in_unit_sphere(points, ret_trans=False):
