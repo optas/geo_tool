@@ -20,3 +20,14 @@ def apply_script_to_files(top_folder, out_top_dir, script_file, regex='.+off$'):
     for in_f in input_files:
         out_f = osp.join(out_top_dir, in_f.replace(top_folder, ''))
         sys_call([mesh_lab_binary, '-i', in_f, '-o', out_f, '-s', script_file])
+
+
+def convert_to_obj(top_folder, out_top_dir, do_nothing_mlx, regex='.+off$'):
+    input_files = files_in_subdirs(top_folder, regex)
+    copy_folder_structure(top_folder, out_top_dir)
+    for in_f in input_files:
+        out_f = osp.join(out_top_dir, in_f.replace(top_folder, ''))
+        out_f = out_f[:-len('off')]  # TODO -> works only for .off
+        out_f = out_f + 'obj'
+        sys_call([mesh_lab_binary, '-i', in_f, '-o', out_f, '-s', do_nothing_mlx])
+

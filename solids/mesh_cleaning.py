@@ -103,7 +103,7 @@ def clean_degenerate_triangles(self, verbose=False):
 
     A = self.angles_of_triangles()
     bad_triangles = np.where((A == 0).any(axis=1))[0]
-    if bad_triangles.any():
+    if bad_triangles.size > 0:
         if verbose:
             print('Deleting triangles containing angles that are 0 degrees.')
         keep = list(set(range(self.num_triangles)) - set(bad_triangles))
@@ -116,7 +116,7 @@ def clean_zero_area_vertices(self, verbose=False):
         warnings.simplefilter("ignore")
         A = self.area_of_vertices()
     bad_vert = np.where(A <= 0)[0]
-    if bad_vert.any():
+    if bad_vert.size > 0:
         if verbose:
             print('Deleting vertices with zero area.')
         keep_list = list(set(range(self.num_vertices)) - set(bad_vert))
