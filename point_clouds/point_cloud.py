@@ -138,10 +138,8 @@ class Point_Cloud(object):
             N = (N.T / row_norms).T
         return N
 
-    def funck(self):
-        return 'funck'
     def rotate_z_axis_by_degrees(self, theta):
-        theta = np.rad2deg(theta)
+        theta = np.deg2rad(theta)
         cos_t = np.cos(theta)
         sin_t = np.sin(theta)
         R = np.array([[cos_t, -sin_t, 0],
