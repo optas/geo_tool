@@ -138,6 +138,16 @@ class Point_Cloud(object):
             N = (N.T / row_norms).T
         return N
 
+    def rotate_z_axis_by_degrees(self, theta):
+        theta = np.rad2deg(theta)
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+        R = np.array([[cos_t, -sin_t, 0],
+                      [sin_t, cos_t, 0],
+                      [0, 0, 1]])
+        self.points = self.points.dot(R)
+        return self
+
     def save_as_ply(self, file_out, normals=None, binary=True):
         if normals is None:
             vp = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])

@@ -30,4 +30,3 @@ def convert_to_obj(top_folder, out_top_dir, do_nothing_mlx, regex='.+off$'):
         out_f = out_f[:-len('off')]  # TODO -> works only for .off
         out_f = out_f + 'obj'
         sys_call([mesh_lab_binary, '-i', in_f, '-o', out_f, '-s', do_nothing_mlx])
-
