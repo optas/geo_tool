@@ -148,6 +148,15 @@ class Point_Cloud(object):
         self.points = self.points.dot(R)
         return self
 
+    def center_axis(self, axis):
+        '''Makes the point-cloud to be equally spread around zero on the particular axis, i.e., to be centered.
+        '''
+        r_max = np.max(self.points[:, axis])
+        r_min = np.min(self.points[:, axis])
+        gap = (r_max + r_min) / 2.0
+        self.points[:, axis] -= gap
+        return self, gap
+
     def save_as_ply(self, file_out, normals=None, binary=True):
         if normals is None:
             vp = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
