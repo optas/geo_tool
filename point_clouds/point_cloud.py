@@ -96,8 +96,7 @@ class Point_Cloud(object):
         return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, in_u_sphere=in_u_sphere, axis=axis, *args, **kwargs)
 
     def barycenter(self):
-        n_points = self.points.shape[0]
-        return np.sum(self.points, axis=0) / n_points
+        return np.mean(self.points, axis=0)
 
     def lex_sort(self, axis=-1):
         '''Sorts the list storing the points of the Point_Cloud in a lexicographical order.
@@ -175,14 +174,27 @@ class Point_Cloud(object):
         text = not binary
         PlyData([el], text=text).write(file_out + '.ply')
 
+    def is_in_unit_sphere(self, epsilon=10e-5):
+        return np.max(l2_norm(self.points, axis=1)) <= (0.5 + epsilon)
+
+    def is_centered_in_origin(self, epsilon=10e-5):
+        '''True, iff the extreme values (min/max) of each axis (x,y,z) are symmetrically placed
+        around the origin.
+        '''
+        return np.all(np.max(self.points, 0) + np.min(self.points, 0) < epsilon)
+
     @staticmethod
-    def center_points_in_unit_sphere(points):
+    def center_points_in_unit_sphere(points, epsilon=10e-5):
         pc = Point_Cloud(points)
-        barycenter = pc.barycenter()
-        points -= barycenter   # Center it in the origin.
-        max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
-        points /= (max_dist * 2.0)
-        return points
+
+        if not pc.is_in_unit_sphere(epsilon=epsilon):
+            max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
+            pc.points /= (max_dist * 2.0)
+
+        if not pc.is_centered_in_origin(epsilon=epsilon):
+            pc.center_axis()
+
+        return pc.points
 
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
