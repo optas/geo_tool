@@ -148,14 +148,21 @@ class Point_Cloud(object):
         self.points = self.points.dot(R)
         return self
 
-    def center_axis(self, axis):
-        '''Makes the point-cloud to be equally spread around zero on the particular axis, i.e., to be centered.
+    def center_axis(self, axis=None):
+        '''Makes the point-cloud to be equally spread around zero on the particular axis, i.e., to be centered. If axis is None, it centers it in all (x,y,z) axis.
         '''
-        r_max = np.max(self.points[:, axis])
-        r_min = np.min(self.points[:, axis])
-        gap = (r_max + r_min) / 2.0
-        self.points[:, axis] -= gap
-        return self, gap
+        if axis is None:
+            _, g0 = self.center_axis(axis=0)
+            _, g1 = self.center_axis(axis=1)
+            _, g2 = self.center_axis(axis=2)
+            return self, [g0, g1, g2]
+        else:
+
+            r_max = np.max(self.points[:, axis])
+            r_min = np.min(self.points[:, axis])
+            gap = (r_max + r_min) / 2.0
+            self.points[:, axis] -= gap
+            return self, gap
 
     def save_as_ply(self, file_out, normals=None, binary=True):
         if normals is None:
@@ -169,28 +176,13 @@ class Point_Cloud(object):
         PlyData([el], text=text).write(file_out + '.ply')
 
     @staticmethod
-    def center_points_in_unit_sphere(points, ret_trans=False):
-        n_points = points.shape[0]
-        points_test = points.copy()
-        barycenter = np.sum(points, axis=0) / n_points
+    def center_points_in_unit_sphere(points):
+        pc = Point_Cloud(points)
+        barycenter = pc.barycenter()
         points -= barycenter   # Center it in the origin.
         max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
-        points /= max_dist * 2
-
-        if ret_trans:
-            trans_matrix = np.zeros([4, 4])
-            trans_matrix[0, 0] = 1.0 / max_dist * 2
-            trans_matrix[1, 1] = 1.0 / max_dist * 2
-            trans_matrix[2, 2] = 1.0 / max_dist * 2
-            trans_matrix[3, 3] = 1.0
-            trans_matrix[3, 0] = -1.0 / max_dist * 2 * barycenter[0]
-            trans_matrix[3, 1] = -1.0 / max_dist * 2 * barycenter[1]
-            trans_matrix[3, 2] = -1.0 / max_dist * 2 * barycenter[2]
-            points_test = np.dot(points_test.T, trans_matrix).T
-            print(np.allclose(points_test, points))
-            return points, trans_matrix
-        else:
-            return points
+        points /= (max_dist * 2.0)
+        return points
 
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, axis=None, *args, **kwargs):
