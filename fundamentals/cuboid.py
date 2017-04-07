@@ -54,8 +54,7 @@ class Cuboid(object):
         return np.vstack([c1, c2, c3, c4, c5, c6, c7, c8])
 
     def diagonal_length(self):
-#         [xmin, ymin, zmin, xmax, ymax, zmax] = self._extrema
-        return l2_norm(self._extrema[:3] - self._extrema[3:])
+        return l2_norm(self.extrema[:3] - self.extrema[3:])
 
     def get_extrema(self):
         ''' Syntactic sugar to get the extrema property into separate variables.
