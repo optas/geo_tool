@@ -53,6 +53,10 @@ class Cuboid(object):
         c8 = np.array([xmin, ymax, zmax])
         return np.vstack([c1, c2, c3, c4, c5, c6, c7, c8])
 
+    def diagonal_length(self):
+#         [xmin, ymin, zmin, xmax, ymax, zmax] = self._extrema
+        return l2_norm(self._extrema[:3] - self._extrema[3:])
+
     def get_extrema(self):
         ''' Syntactic sugar to get the extrema property into separate variables.
         '''
