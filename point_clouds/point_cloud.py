@@ -89,11 +89,12 @@ class Point_Cloud(object):
         self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
         return self
 
-    def plot(self, show=True, in_u_sphere=False, axis=None, elev=10, azim=240, *args, **kwargs):
+    def plot(self, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         x = self.points[:, 0]
         y = self.points[:, 1]
         z = self.points[:, 2]
-        return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, in_u_sphere=in_u_sphere, axis=axis, elev=elev, azim=azim, *args, **kwargs)
+        return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, show_axis=show_axis, in_u_sphere=in_u_sphere, marker=marker, s=s, alpha=alpha, figsize=figsize,
+                                               color=color, axis=axis, elev=elev, azim=azim, *args, **kwargs)
 
     def barycenter(self):
         return np.mean(self.points, axis=0)
@@ -197,7 +198,7 @@ class Point_Cloud(object):
         return pc.points
 
     @staticmethod
-    def plot_3d_point_cloud(x, y, z, show=True, in_u_sphere=False, elev=10, azim=240, axis=None, *args, **kwargs):
+    def plot_3d_point_cloud(x, y, z, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         if axis is None:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
@@ -205,13 +206,16 @@ class Point_Cloud(object):
             ax = axis
             fig = axis
 
-        ax.scatter(x, y, z, *args, **kwargs)
+        ax.scatter(x, y, z, marker=marker, s=s, alpha=alpha, color=color, *args, **kwargs)
         ax.view_init(elev=elev, azim=azim)
 
         if in_u_sphere:
             ax.set_xlim3d(-0.5, 0.5)
             ax.set_ylim3d(-0.5, 0.5)
             ax.set_zlim3d(-0.5, 0.5)
+
+        if not show_axis:
+            plt.axis('off')
 
         if show:
             plt.show()
