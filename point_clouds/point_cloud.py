@@ -188,12 +188,12 @@ class Point_Cloud(object):
     def center_points_in_unit_sphere(points, epsilon=10e-5):
         pc = Point_Cloud(points)
 
+        if not pc.is_centered_in_origin(epsilon=epsilon):
+            pc.center_axis()
+
         if not pc.is_in_unit_sphere(epsilon=epsilon):
             max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
             pc.points /= (max_dist * 2.0)
-
-        if not pc.is_centered_in_origin(epsilon=epsilon):
-            pc.center_axis()
 
         return pc.points
 
