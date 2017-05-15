@@ -200,7 +200,7 @@ class Point_Cloud(object):
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         if axis is None:
-            fig = plt.figure()
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111, projection='3d')
         else:
             ax = axis
