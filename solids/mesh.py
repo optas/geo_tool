@@ -20,10 +20,10 @@ from .. in_out import soup as io
 from .. fundamentals import Graph, Cuboid
 from .. point_clouds import Point_Cloud
 
-try:
-    from mayavi import mlab as mayalab
-except:
-    warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
+# try:
+#     from mayavi import mlab as mayalab
+# except:
+#     warnings.warn('Mayavi library was not found. Some graphics utilities will be disabled.')
 
 l2_norm = utils.l2_norm
 
