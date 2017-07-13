@@ -11,15 +11,13 @@ import warnings
 import re
 import numpy as np
 from glob import glob
-from .. external_code.python_plyfile.plyfile import PlyData
-
+from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
 try:
     import cv2
 except:
     warnings.warn('OpenCV library is not installed.')
 
 # TODO Break down in more in_out modules
-
 
 def per_image_whitening(image):
     '''Linearly scales image to have zero mean and unit (variance) norm. The transformation is happening in_place.
@@ -143,11 +141,10 @@ def load_wavefront_obj(file_name, vdtype=np.float32, tdtype=np.int32):
     return vertices, faces, normals
 
 
-def write_wavefront_obj(filename, vertices, faces, normals):
-    ''' write the wavefront obj file. Input are as the same format as the output in
-    load_wavefront_obj function.
+def write_wavefront_obj(filename, vertices, faces, vertex_normals=None):
+    ''' Write a wavefront obj to a file. It will only consider: vertices, faces and (optionally) vertex normals.
     '''
-    faces = faces + 1 # Starts at 1
+    faces = faces + 1   # Starts at 1
     with open(filename, 'w') as f_out:
         # write vertices
         for v in vertices:
@@ -157,9 +154,10 @@ def write_wavefront_obj(filename, vertices, faces, normals):
         for f in faces:
             f_out.write('f %d %d %d\n' % (f[0], f[1], f[2]))
 
-        # write normals
-        for vn in normals:
-            f_out.write('vn %f %f %f\n' % (vn[0], vn[1], vn[2]))
+        # Write normals.
+        if vertex_normals is not None:
+            for vn in vertex_normals:
+                f_out.write('vn %f %f %f\n' % (vn[0], vn[1], vn[2]))
 
 
 def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.float32, permute=None):
@@ -196,16 +194,47 @@ def load_annotation_of_points(file_name, data_format='shape_net'):
         ValueError('NIY.')
 
 
-def load_ply(file_name, with_faces=False):
+def load_ply(file_name, with_faces=False, with_color=False):
     ply_data = PlyData.read(file_name)
     points = ply_data['vertex']
     points = np.vstack([points['x'], points['y'], points['z']]).T
+    ret_val = [points]
 
     if with_faces:
         faces = np.vstack(ply_data['face']['vertex_indices'])
-        return points, faces
+        ret_val.append(faces)
+
+    if with_color:
+        r = np.vstack(ply_data['vertex']['red'])
+        g = np.vstack(ply_data['vertex']['green'])
+        b = np.vstack(ply_data['vertex']['blue'])
+        color = np.hstack((r, g, b))
+        ret_val.append(color)
+
+    if len(ret_val) == 1:  # Unwrap the list
+        ret_val = ret_val[0]
+
+    return ret_val
+
+
+def save_as_ply(points, file_out, normals=None, color=None, binary=True):
+    if normals is None and color is None:
+        vp = np.array([(p[0], p[1], p[2]) for p in points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
+    elif color is None:
+        # normals exist
+        values = np.hstack((points, normals))
+        vp = np.array([(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4')])
+    elif normals is None:
+        # color exist
+        values = np.hstack((points, color))
+        vp = np.array([(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('red', 'uint8'), ('green', 'uint8'), ('blue', 'uint8')])    
     else:
-        return points
+        # both color and normals exist
+        raise NotImplementedError()
+
+    el = PlyElement.describe(vp, 'vertex')
+    text = not binary
+    PlyData([el], text=text).write(file_out + '.ply')
 
 
 def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
@@ -325,17 +354,3 @@ def read_pixel_list_from_txt(in_file):
     x_coord = pixels[:, 0]
     y_coord = pixels[:, 1]
     return x_coord, y_coord
-
-# ADD as way of making mask from image.  
-# image         = cv2.imread(views_folder + '/img-00-00.png', cv2.IMREAD_UNCHANGED)
-# plt.subplot(1,2,1); plt.imshow(image)
-# test = np.asarray(image)
-# xpix, ypix = test.shape[0:2]
-# mask_test = np.zeros((xpix, ypix))
-# white_rgb = np.array([0,0,0], dtype=test.dtype)
-# for i in xrange(xpix):
-#     for j in xrange(ypix):
-#         if all(test[i,j,0:3] == white_rgb) and test[i,j,3] ==0:
-#             mask_test[i,j] = 1
-# plt.subplot(1,2,2); plt.imshow(mask_test)
-

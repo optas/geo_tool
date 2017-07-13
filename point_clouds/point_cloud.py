@@ -91,11 +91,11 @@ class Point_Cloud(object):
     def center_in_unit_sphere(self):
         self.points = Point_Cloud.center_points(self.points, center='unit_sphere')
         return self
-    
+
     def center_in_unit_cube(self):
         self.points = Point_Cloud.center_points(self.points, center='unit_cube')
         return self
-    
+
     def plot(self, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         x = self.points[:, 0]
         y = self.points[:, 1]
@@ -174,16 +174,8 @@ class Point_Cloud(object):
             self.points[:, axis] -= gap
             return self, gap
 
-    def save_as_ply(self, file_out, normals=None, binary=True):
-        if normals is None:
-            vp = np.array([(p[0], p[1], p[2]) for p in self.points], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
-        else:
-            values = np.hstack((self.points, normals))
-            vp = np.array([(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4')])
-
-        el = PlyElement.describe(vp, 'vertex')
-        text = not binary
-        PlyData([el], text=text).write(file_out + '.ply')
+    def save_as_ply(self, file_out, normals=None, color=None, binary=True):
+        io.save_as_ply(self.points, file_out, normals=normals, color=color, binary=binary)
 
     def is_in_unit_sphere(self, epsilon=10e-5):
         return np.max(l2_norm(self.points, axis=1)) <= (0.5 + epsilon)
