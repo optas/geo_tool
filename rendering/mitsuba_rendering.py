@@ -1,16 +1,15 @@
 import os
 import numpy as np
+import shutil
+import os.path as osp
 import matplotlib.pyplot as plt
 
 from geo_tool.in_out.soup import load_wavefront_obj, load_ply
 from geo_tool import Point_Cloud
 
-from general_tools.strings import trim_content_after_last_dot
 from general_tools.in_out import create_dir
+from general_tools.strings import trim_content_after_last_dot
 from general_tools.plotting import rgb_to_hex_string
-
-import shutil
-import os.path as osp
 
 
 class Mitsuba_Rendering(object):
@@ -24,6 +23,8 @@ class Mitsuba_Rendering(object):
             temp_dir : Mitsuba will store here intermediate results.
             dependencies_dir: holds files like: envmap.exr, matpreview.serialized that are necessary for rendering.
             clean_temp: if True, post rendering all intermediate results will be deleted.
+
+        Assumes Mitsuba is installed and can be accessed in a terminal with 'mitsuba'. Similarly, 'mtsutil' can be called from the command line.
         '''
 
         self.command_file = command_file
@@ -39,19 +40,24 @@ class Mitsuba_Rendering(object):
         shutil.copy(os.path.join(dependencies_dir, 'matpreview.serialized'), self.temp_dir)
 
     def set_default_rendering_params(self):
-        self.radius = 0.01          		# Size of rendered sphere (of point-clouds).
-        self.ldsampler_n_samples = 128		# Controls the quality of the rendering, higher is better.
-        self.zrot = (-50) * np.pi / 180
-        self.ytrans = 0.5
-        self.ztrans = 0
-        self.dx_scale = 1
-        self.sensor_focus_distance = 2.3173
-        self.sensor_target = [0, 0, 0]
-        self.sensor_origin = [0, -1.25, 0.40]
+        self.sphere_radius = 0.015          		# Size of rendered sphere (of point-clouds).
+        self.ldsampler_n_samples = 128		        # Controls the quality of the rendering, higher is better.
+
+        self.z_rot_degrees = 0                               # Rotate object along z-axis before render it.
+
+        self.backdrop_size = 10                     # Backdrop is the white cloth put in professional photo-shooting as background.
+        self.backdrop_x_pos = 0
+        self.backdrop_y_pos = 5
+        self.backdrop_z_pos = 0                     # This is relative and it will be added to the minimum point of the physical object that is rendered to
+                                                    # decide the z position of the backdrop.
+
+        self.sensor_origin = [0, -2, 0.40]          # Where is the sensor/camera being placed in [x,y,z] space.
+        self.sensor_target = [0, 0, 0]              # Where the sensor is pointed to.
         self.sensor_up = [0, 0, 1]
-        self.sensor_height = 480
+        self.sensor_focus_distance = 2.3173
+
+        self.sensor_height = 480  # img_out dimensions
         self.sensor_width = 480
-        self.scale = 10
 
     def pc_loader(self, file_name, normalize=True, load_color=False):
         if file_name[-4:] == '.ply':
@@ -64,7 +70,7 @@ class Mitsuba_Rendering(object):
 
             if normalize:
                 pc.center_in_unit_sphere()
-            pc.rotate_z_axis_by_degrees(self.zrot, clockwise=False)
+            pc.rotate_z_axis_by_degrees(self.z_rot_degrees, clockwise=False)
 
         return pc, color
 
@@ -88,10 +94,10 @@ class Mitsuba_Rendering(object):
                 xml_out.write(self.xml_string(pc_z_min))
                 if colors is not None:
                     for i, point in enumerate(pcloud.points):
-                        xml_out.write(self.xml_point_string(self.radius, point, colors[i]))
+                        xml_out.write(self.xml_point_string(self.sphere_radius, point, colors[i]))
                 else:
                     for point in pcloud.points:
-                        xml_out.write(self.xml_point_string(self.radius, point))
+                        xml_out.write(self.xml_point_string(self.sphere_radius, point))
 
                 xml_out.write(self.xml_closure())
 
@@ -114,9 +120,9 @@ class Mitsuba_Rendering(object):
             pass
 
     def xml_string(self, pc_z_min):
-        return self.xml_preamble() + self.xml_sensor() + self.xml_emitter() + self.xml_fold(pc_z_min)
+        return self.xml_preamble() + self.xml_sensor() + self.xml_emitter() + self.xml_backdrop(pc_z_min)
 
-    def xml_point_string(self, radius, position, color=None):
+    def xml_point_string(self, sphere_radius, position, color=None):
         if color is not None:
             r, g, b = color
             color_value = rgb_to_hex_string(r, g, b)
@@ -124,13 +130,12 @@ class Mitsuba_Rendering(object):
             color_value = '#6d7185'
 
         out_str = '<shape type="sphere">\n'
-        out_str += '\t<float name="radius" value="%.5f"/>\n' % radius
+        out_str += '\t<float name="sphere_radius" value="%f"/>\n' % (sphere_radius, )
         out_str += '\t<transform name="toWorld">\n'
-        out_str += '\t\t<translate x="%.10f" y="%.10f" z="%.10f"/>\n' % (position[0], position[1], position[2])
+        out_str += '\t\t<translate x="%f" y="%f" z="%f"/>\n' % (position[0], position[1], position[2])
         out_str += '\t</transform>\n'
         out_str += '\t<bsdf type="diffuse">\n'
         out_str += '\t\t<srgb name="diffuseReflectance" value="%s"/>\n' % (color_value, )
-        # out_str += '\t\t<float name="intIOR" value="1.9"/>\n'  # TODO Olga do we need this?
         out_str += '\t</bsdf>\n'
         out_str += '</shape>\n\n'
 
@@ -148,12 +153,12 @@ class Mitsuba_Rendering(object):
 
     def xml_sensor(self):
         out_str = '<sensor type="perspective">\n'
-        out_str += '\t<float name="focusDistance" value="%.10f"/>\n' % self.sensor_focus_distance
+        out_str += '\t<float name="focusDistance" value="%f"/>\n' % self.sensor_focus_distance
         out_str += '\t<float name="fov" value="45"/>\n'
         out_str += '\t<string name="fovAxis" value="x"/>\n'
         out_str += '\t<transform name="toWorld">\n'
 
-        out_str += '\t\t<lookat target="%.10f, %.10f, %.10f" origin="%.10f, %.10f, %.10f" up="%.10f, %.10f, %.10f"/>\n' \
+        out_str += '\t\t<lookat target="%f, %f, %f" origin="%f, %f, %f" up="%f, %f, %f"/>\n' \
             % (self.sensor_target[0], self.sensor_target[1], self.sensor_target[2], self.sensor_origin[0], \
                self.sensor_origin[1], self.sensor_origin[2], self.sensor_up[0], self.sensor_up[1], self.sensor_up[2])
 
@@ -184,16 +189,18 @@ class Mitsuba_Rendering(object):
         out_str = '<shape type="obj">\n'
         out_str += '\t<string name="filename" value="%s"/>\n' % obj_filename
         out_str += '\t<transform name="toWorld" >\n'
-        out_str += '\t\t<translate x="%.10f" y="%.10f" z="%.10f"/>\n' % (position[0], position[1], position[2])
+        out_str += '\t\t<translate x="%f" y="%f" z="%f"/>\n' % (position[0], position[1], position[2])
         out_str += '\t</transform >\n'
         out_str += '\t<bsdf type="diffuse" >\n'
         out_str += '\t\t<srgb name="diffuseReflectance" value="#6d7185"/>\n'
-        # out_str += '\t\t<float name="intIOR" value="1.9"/>\n' #TODO olga?
         out_str += '\t</bsdf>\n'
         out_str += '</shape>\n'
         return out_str
 
-    def xml_fold(self, pc_z_min=-0.5):
+    def xml_backdrop(self, pc_z_min):
+        ''' backdrop is the white colored cloth that is used when photo-shooting and acts like the background.
+        In Mitsuba we add such an object along with our object of interest to help rendering the latter.
+        '''
         out_str = '<texture type="checkerboard" id="__planetex">\n'
         out_str += '\t<rgb name="color0" value="0.9"/>\n'
         out_str += '\t<rgb name="color1" value="0.9"/>\n'
@@ -211,8 +218,8 @@ class Mitsuba_Rendering(object):
         out_str += '\t<string name="filename" value="matpreview.serialized"/>\n'
         out_str += '\t<integer name="shapeIndex" value="0"/>\n'
         out_str += '\t<transform name="toWorld">\n'
-        out_str += '\t\t<scale x="%.4f" y="%.4f" z="%.4f"/>\n' % (self.scale, self.scale, self.scale)
-        out_str += '\t\t<translate y="%.10f" z="%.10f" />\n' % (self.scale * self.ytrans, self.ztrans + pc_z_min)
+        out_str += '\t\t<scale x="%f" y="%f" z="%f"/>\n' % (self.backdrop_size, self.backdrop_size, self.backdrop_size)
+        out_str += '\t\t<translate x="%f" y="%f" z="%f" />\n' % (self.backdrop_x_pos, self.backdrop_y_pos, self.backdrop_z_pos + pc_z_min)
         out_str += '\t</transform>\n'
         out_str += '\t<ref name="bsdf" id="__planemat"/>\n'
         out_str += '</shape>\n\n'
