@@ -142,6 +142,7 @@ def load_wavefront_obj(file_name, vdtype=np.float32, tdtype=np.int32):
 
     return vertices, faces, normals
 
+
 def write_wavefront_obj(filename, vertices, faces, normals):
     ''' write the wavefront obj file. Input are as the same format as the output in
     load_wavefront_obj function.
@@ -159,6 +160,7 @@ def write_wavefront_obj(filename, vertices, faces, normals):
         # write normals
         for vn in normals:
             f_out.write('vn %f %f %f\n' % (vn[0], vn[1], vn[2]))
+
 
 def load_crude_point_cloud(file_name, delimiter=' ', comments='#', dtype=np.float32, permute=None):
     '''Input: file_name (string) of a file containing 3D points. Each line of the file

@@ -60,6 +60,9 @@ class Point_Cloud(object):
     def __str__(self):
         return 'Point Cloud with %d points.' % (self.num_points)
 
+    def __getitem__(self, key):
+        return self.points[key]
+
     def save(self, file_out):
         with open(file_out, "wb") as f_out:
             cPickle.dump(self, f_out, protocol=2)
@@ -86,9 +89,13 @@ class Point_Cloud(object):
         return Cuboid.bounding_box_of_3d_points(self.points)
 
     def center_in_unit_sphere(self):
-        self.points = Point_Cloud.center_points_in_unit_sphere(self.points)
+        self.points = Point_Cloud.center_points(self.points, center='unit_sphere')
         return self
-
+    
+    def center_in_unit_cube(self):
+        self.points = Point_Cloud.center_points(self.points, center='unit_cube')
+        return self
+    
     def plot(self, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         x = self.points[:, 0]
         y = self.points[:, 1]
@@ -138,13 +145,16 @@ class Point_Cloud(object):
             N = (N.T / row_norms).T
         return N
 
-    def rotate_z_axis_by_degrees(self, theta):
+    def rotate_z_axis_by_degrees(self, theta, clockwise=True):
         theta = np.deg2rad(theta)
         cos_t = np.cos(theta)
         sin_t = np.sin(theta)
         R = np.array([[cos_t, -sin_t, 0],
                       [sin_t, cos_t, 0],
                       [0, 0, 1]])
+        if not clockwise:
+            R = R.T
+
         self.points = self.points.dot(R)
         return self
 
@@ -178,6 +188,9 @@ class Point_Cloud(object):
     def is_in_unit_sphere(self, epsilon=10e-5):
         return np.max(l2_norm(self.points, axis=1)) <= (0.5 + epsilon)
 
+    def is_in_unit_cube(self, epsilon=10e-5):
+        return np.max(abs(self.points)) <= (0.5 + epsilon)
+
     def is_centered_in_origin(self, epsilon=10e-5):
         '''True, iff the extreme values (min/max) of each axis (x,y,z) are symmetrically placed
         around the origin.
@@ -185,16 +198,22 @@ class Point_Cloud(object):
         return np.all(np.max(self.points, 0) + np.min(self.points, 0) < epsilon)
 
     @staticmethod
-    def center_points_in_unit_sphere(points, epsilon=10e-5):
+    def center_points(points, epsilon=10e-5, center='unit_sphere'):
         pc = Point_Cloud(points)
 
         if not pc.is_centered_in_origin(epsilon=epsilon):
             pc.center_axis()
 
-        if not pc.is_in_unit_sphere(epsilon=epsilon):
-            max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
-            pc.points /= (max_dist * 2.0)
+        if center == 'unit_sphere':
+            if not pc.is_in_unit_sphere(epsilon=epsilon):
+                max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
+                pc.points /= (max_dist * 2.0)
 
+        elif center == 'unit_cube':
+            if not pc.is_in_unit_cube(epsilon=epsilon):
+                cb = Cuboid.bounding_box_of_3d_points(pc.points)
+                max_dist = cb.diagonal_length()
+                pc.points /= max_dist
         return pc.points
 
     @staticmethod
