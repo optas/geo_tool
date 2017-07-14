@@ -43,7 +43,7 @@ class Mitsuba_Rendering(object):
         self.sphere_radius = 0.015          		# Size of rendered sphere (of point-clouds).
         self.ldsampler_n_samples = 128		        # Controls the quality of the rendering, higher is better.
 
-        self.z_rot_degrees = 0                               # Rotate object along z-axis before render it.
+        self.z_rot_degrees = 0                      # Rotate object along z-axis before render it.
 
         self.backdrop_size = 10                     # Backdrop is the white cloth put in professional photo-shooting as background.
         self.backdrop_x_pos = 0
@@ -51,7 +51,7 @@ class Mitsuba_Rendering(object):
         self.backdrop_z_pos = 0                     # This is relative and it will be added to the minimum point of the physical object that is rendered to
                                                     # decide the z position of the backdrop.
 
-        self.sensor_origin = [0, -2, 0.40]          # Where is the sensor/camera being placed in [x,y,z] space.
+        self.sensor_origin = [0, -2.5, 0.5]          # Where is the sensor/camera being placed in [x,y,z] space.
         self.sensor_target = [0, 0, 0]              # Where the sensor is pointed to.
         self.sensor_up = [0, 0, 1]
         self.sensor_focus_distance = 2.3173
@@ -73,13 +73,6 @@ class Mitsuba_Rendering(object):
             pc.rotate_z_axis_by_degrees(self.z_rot_degrees, clockwise=False)
 
         return pc, color
-
-#     def obj_loader(self, file_name):
-#         vertices, faces, normals = load_wavefront_obj(file_name)
-#         v_np = np.zeros((len(vertices),3))
-#         for i in xrange(len(vertices)):
-#             v_np[i,:] = vertices[i]
-#         return v_np, faces
 
     def generate_commands_for_point_cloud_rendering(self, color_per_point=False):
         command = ''
@@ -130,7 +123,7 @@ class Mitsuba_Rendering(object):
             color_value = '#6d7185'
 
         out_str = '<shape type="sphere">\n'
-        out_str += '\t<float name="sphere_radius" value="%f"/>\n' % (sphere_radius, )
+        out_str += '\t<float name="radius" value="%f"/>\n' % (sphere_radius, )
         out_str += '\t<transform name="toWorld">\n'
         out_str += '\t\t<translate x="%f" y="%f" z="%f"/>\n' % (position[0], position[1], position[2])
         out_str += '\t</transform>\n'
@@ -250,3 +243,11 @@ class Mitsuba_Rendering(object):
 #             command += 'mtsutil tonemap -o %s %s\n' % (img_path, exr_path)
 #             fw_command.write(command)
 #         fw_command.close(
+
+
+#     def obj_loader(self, file_name):
+#         vertices, faces, normals = load_wavefront_obj(file_name)
+#         v_np = np.zeros((len(vertices),3))
+#         for i in xrange(len(vertices)):
+#             v_np[i,:] = vertices[i]
+#         return v_np, faces
