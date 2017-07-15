@@ -23,7 +23,7 @@ try:
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 except:
-    warnings.warn('Pyplot library is not working correctly. Some graphics utilities will be disabled.')
+    warnings.warn('Pyplot library is not fully working. Limited plotting utilities are available.')
 
 from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
 from .. in_out import soup as io
