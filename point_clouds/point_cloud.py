@@ -176,8 +176,7 @@ class Point_Cloud(object):
         self.points[:, 2] *= z_ratio
         a_xmin, a_ymin, a_zmin, a_xmax, a_ymax, a_zmax = self.bounding_box().extrema
         trans_vector = np.array([(b_xmin - a_xmin), (b_ymin - a_ymin), (b_zmin - a_zmin)])
-        self.points += trans_vector # self.translate(trans_vector)
-        return self
+        return self.translate(trans_vector)
 
     def center_axis(self, axis=None):
         '''Makes the point-cloud to be equally spread around zero on the particular axis, i.e., to be centered. If axis is None, it centers it in all (x,y,z) axis.
