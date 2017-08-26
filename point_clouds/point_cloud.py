@@ -158,6 +158,26 @@ class Point_Cloud(object):
         self.points = self.points.dot(R)
         return self
 
+    def translate(self, trans_vector):
+        self.points += trans_vector
+        return self
+
+    def align_to_other_pc(self, other_pc):
+        ''' Stretches and translates given pc to match the extrema of the `other_pc`.
+        Note: Doesn't apply rotation. Transformation applied online
+        '''
+        a_xmin, a_ymin, a_zmin, a_xmax, a_ymax, a_zmax = self.bounding_box().extrema
+        b_xmin, b_ymin, b_zmin, b_xmax, b_ymax, b_zmax = other_pc.bounding_box().extrema
+        x_ratio = (b_xmax - b_xmin) / (a_xmax - a_xmin)
+        y_ratio = (b_ymax - b_ymin) / (a_ymax - a_ymin)
+        z_ratio = (b_zmax - b_zmin) / (a_zmax - a_zmin)
+        self.points[:, 0] *= x_ratio
+        self.points[:, 1] *= y_ratio
+        self.points[:, 2] *= z_ratio
+        a_xmin, a_ymin, a_zmin, a_xmax, a_ymax, a_zmax = self.bounding_box().extrema
+        trans_vector = np.array([(b_xmin - a_xmin), (b_ymin - a_ymin), (b_zmin - a_zmin)])
+        return self.translate(trans_vector)
+
     def center_axis(self, axis=None):
         '''Makes the point-cloud to be equally spread around zero on the particular axis, i.e., to be centered. If axis is None, it centers it in all (x,y,z) axis.
         '''
