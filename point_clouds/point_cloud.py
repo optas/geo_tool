@@ -96,7 +96,7 @@ class Point_Cloud(object):
         self.points = Point_Cloud.center_points(self.points, center='unit_cube')
         return self
 
-    def plot(self, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
+    def plot(self, show=True, show_axis=True, in_u_sphere=True, marker='.', s=8, alpha=.8, figsize=(5, 5), color='b', elev=10, azim=240, axis=None, *args, **kwargs):
         x = self.points[:, 0]
         y = self.points[:, 1]
         z = self.points[:, 2]
