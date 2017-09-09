@@ -9,6 +9,9 @@ Created on June 14, 2016
 import numpy as np
 import warnings
 from collections import defaultdict
+
+from general_tools.arrays.basics import unique_rows
+
 from .. utils import linalg_utils as linalg_utils
 
 
@@ -53,12 +56,12 @@ def isolated_vertices(self):
 
 
 def has_identical_triangles(self):
-    new_tr = linalg_utils.unique_rows(self.triangles)
+    new_tr = unique_rows(self.triangles)
     return len(new_tr) != self.num_triangles
 
 
 def clean_identical_triangles(self, verbose=False):
-    new_tr = linalg_utils.unique_rows(self.triangles)
+    new_tr = unique_rows(self.triangles)
     if len(new_tr) != self.num_triangles:
         if verbose:
             print('Identical triangles were detected and are being deleted.')

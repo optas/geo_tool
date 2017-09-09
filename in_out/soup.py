@@ -19,6 +19,7 @@ except:
 
 # TODO Break down in more in_out modules
 
+
 def per_image_whitening(image):
     '''Linearly scales image to have zero mean and unit (variance) norm. The transformation is happening in_place.
     '''

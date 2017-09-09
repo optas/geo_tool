@@ -14,11 +14,13 @@ from scipy import sparse as sp
 from numpy.matlib import repmat
 from six.moves import cPickle
 
-from .. utils import linalg_utils as utils
-from .. utils.linalg_utils import accumarray
-from .. in_out import soup as io
-from .. fundamentals import Graph, Cuboid
-from .. point_clouds import Point_Cloud
+from general_tools.arrays.basics import unique_rows
+
+from ..utils import linalg_utils as utils
+from ..utils.linalg_utils import accumarray
+from ..in_out import soup as io
+from ..fundamentals import Graph, Cuboid
+from ..point_clouds import Point_Cloud
 
 # try:
 #     from mayavi import mlab as mayalab
@@ -118,7 +120,7 @@ class Mesh(object):
         for i, t in enumerate(self.triangles):
             edges[i, :] = perm_gen(t)
         edges.resize(self.num_triangles * 6, 2)
-        return utils.unique_rows(edges)
+        return unique_rows(edges)
 
     def adjacency_matrix(self):
         E = self.undirected_edges()

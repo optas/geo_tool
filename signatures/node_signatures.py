@@ -12,6 +12,7 @@ import scipy.sparse as sparse
 from scipy.sparse.linalg import eigs
 
 from general_tools.rla.one_d_transforms import smooth_normal_outliers, find_non_homogeneous_vectors
+from general_tools.arrays.basics import scale
 from .. utils import linalg_utils as utils
 
 
@@ -22,7 +23,7 @@ def fiedler_of_component_spectra(in_mesh, in_lb, thres):
     for i in xrange(n_cc):
         nodes = multi_cc[i]
         if spectra[i]:
-            magic_color = utils.scale(spectra[i][1][:, -1]**2)
+            magic_color = scale(spectra[i][1][:, -1]**2)
             aggregate_color[nodes] = magic_color.reshape(len(nodes), 1)
     return aggregate_color[:, 0]
 
@@ -54,7 +55,7 @@ def hks_of_component_spectra(in_mesh, in_lb, area_type, percent_of_eigs, time_ho
                 sig = heat_kernel_signature(evals, evecs, ts)
                 sig = sig / utils.l2_norm(sig, axis=0)
                 hks_signature[nodes, :] = sig
-                magic_color = utils.scale(np.sum(sig, 1))
+                magic_color = scale(np.sum(sig, 1))
                 aggregate_color[nodes] = magic_color.reshape(len(nodes), 1)
 
     return aggregate_color, hks_signature
