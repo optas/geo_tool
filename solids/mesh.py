@@ -138,10 +138,10 @@ class Mesh(object):
         '''Computes the length of each edge, of each triangle in the underlying triangular mesh.
 
         Returns:
-            L - (num_of_triangles x 3) L[i] is a triple containing the lengths of the 3 edges corresponding to the i-th triangle.
+            L - (num_of_triangles x 3) L[i] is a triplet containing the lengths of the 3 edges corresponding to the i-th triangle.
             The enumeration of the triangles is the same at in -T- and the order in which the edges are
             computed is (V2, V3), (V1, V3) (V1, V2). I.e. L[i][2] is the edge length between the 1st
-            vertex and the third vertex of the i-th triangle.'''
+            vertex and the second vertex of the i-th triangle.'''
         V = self.vertices
         T = self.triangles
         L1 = l2_norm(V[T[:, 1], :] - V[T[:, 2], :], axis=1)
@@ -299,7 +299,7 @@ class Mesh(object):
         return Cuboid.bounding_box_of_3d_points(self.vertices)
 
     def center_in_unit_sphere(self):
-        self.vertices = Point_Cloud.center_points_in_unit_sphere(self.vertices)
+        self.vertices = Point_Cloud.center_points(self.vertices, center='unit_sphere')
         return self
 
     def sample_faces(self, n_samples, at_least_one=True, seed=None):
