@@ -3,8 +3,13 @@ Created on Aug 21, 2017
 
 @author: optas
 '''
+import warnings
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from scipy.sparse.linalg import eigs
+
+from ..fundamentals import Graph
+from ..utils.linalg_utils import l2_norm
 
 
 def greedy_match_pc_to_pc(from_pc, to_pc):
@@ -18,3 +23,26 @@ def chamfer_pseudo_distance(pc1, pc2):
     _, d1 = greedy_match_pc_to_pc(pc1, pc2)
     _, d2 = greedy_match_pc_to_pc(pc2, pc1)
     return np.sum(d1) + np.sum(d2)
+
+
+def laplacian_spectrum(pc, n_evecs, k=6):
+    ''' k: (int) number of nearest neighbors each point is connected with in the constructed Adjacency
+    matrix that will be used to derive the Laplacian.
+    '''
+    neighbors_ids, distances = pc.k_nearest_neighbors(k)
+    A = Graph.knn_to_adjacency(neighbors_ids, distances)
+    if Graph.connected_components(A)[0] != 1:
+        raise ValueError('Graph has more than one connected component, increase k.')
+    A = (A + A.T) / 2.0
+    L = Graph.adjacency_to_laplacian(A, 'norm').astype('f4')
+    evals, evecs = eigs(L, n_evecs + 1, sigma=-10e-1, which='LM')
+    if np.any(l2_norm(evecs.imag, axis=0) / l2_norm(evecs.real, axis=0) > 1.0 / 100):
+        warnings.warn('Produced eigen-vectors are complex and contain significant mass on the imaginary part.')
+
+    evecs = evecs.real   # eigs returns complex values by default.
+    evals = evals.real
+
+    index = np.argsort(evals)  # Sort evals from smallest to largest
+    evals = evals[index]
+    evecs = evecs[:, index]
+    return evals, evecs
