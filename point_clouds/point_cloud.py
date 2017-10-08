@@ -207,7 +207,7 @@ class Point_Cloud(object):
         '''True, iff the extreme values (min/max) of each axis (x,y,z) are symmetrically placed
         around the origin.
         '''
-        return np.all(np.max(self.points, 0) + np.min(self.points, 0) < epsilon)
+        return np.all(abs(np.max(self.points, 0) + np.min(self.points, 0)) < epsilon)
 
     @staticmethod
     def center_points(points, epsilon=10e-5, center='unit_sphere'):
@@ -226,6 +226,9 @@ class Point_Cloud(object):
                 cb = Cuboid.bounding_box_of_3d_points(pc.points)
                 max_dist = cb.diagonal_length()
                 pc.points /= max_dist
+        else:
+            raise ValueError()
+
         return pc.points
 
     @staticmethod
