@@ -9,7 +9,7 @@ try:
     from mayavi import mlab as mayalab
 except:
     print 'mayavi not installed.'
-    
+
 from mpl_toolkits.mplot3d import Axes3D
 
 from . point_cloud import Point_Cloud
