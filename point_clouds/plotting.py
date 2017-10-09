@@ -5,7 +5,11 @@ Created on July 11, 2017
 '''
 import numpy
 import matplotlib.pyplot as plt
-from mayavi import mlab as mayalab
+try:
+    from mayavi import mlab as mayalab
+except:
+    print 'mayavi not installed.'
+    
 from mpl_toolkits.mplot3d import Axes3D
 
 from . point_cloud import Point_Cloud
