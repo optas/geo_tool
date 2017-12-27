@@ -17,10 +17,19 @@ class Graph(object):
     '''A class offering some basic graph-related functions. It uses mostly scipy modules.
     '''
 
-    def __init__(self, params):
+    def __init__(self, adjacency, is_directed):
         '''
         Constructor
         '''
+        self.adjacency = adjacency
+        self.is_directed = is_directed
+
+    def edges(self):
+        if self.is_directed:
+            E = self.adjacency.nonzero()
+        else:
+            E = sparse.triu(self.adjacency).nonzero() #TODO: Assumes - sparse storage.
+        return E
 
     @staticmethod
     def connected_components(A):

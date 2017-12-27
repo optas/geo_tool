@@ -2,7 +2,7 @@
 Created on December 26, 2017
 
 @author: optas
-TODO: Merge/refactor (fundamentals/graph + graph_roles)
+TODO: Merge/ re-factor (fundamentals/graph + graph_roles)
 '''
 
 import numpy as np
