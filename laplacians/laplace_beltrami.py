@@ -33,7 +33,7 @@ class Laplace_Beltrami(object):
         self.M = in_mesh
         self.W = Laplace_Beltrami.cotangent_laplacian(self.M)
 
-    def spectra(self, k, area_type='barycentric', normalize=True):
+    def spectra(self, k, area_type='barycentric'):
         A = self.M.area_of_vertices(area_type)
         A = sparse.spdiags(A[:, 0], 0, A.size, A.size)
         evals, evecs = eigs(self.W, k, A, sigma=-10e-1, which='LM')
