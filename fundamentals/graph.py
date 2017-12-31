@@ -25,10 +25,12 @@ class Graph(object):
         self.is_directed = is_directed
 
     def edges(self):
+        '''
+        '''  # TODO return values too.
         if self.is_directed:
             E = self.adjacency.nonzero()
         else:
-            E = sparse.triu(self.adjacency).nonzero() #TODO: Assumes - sparse storage.
+            E = sparse.triu(self.adjacency).nonzero()  # TODO: Assumes - sparse storage.
         return E
 
     @staticmethod

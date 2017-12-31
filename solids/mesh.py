@@ -16,11 +16,14 @@ from six.moves import cPickle
 
 from general_tools.arrays.basics import unique_rows
 
-from ..utils import linalg_utils as utils
-from ..utils.linalg_utils import accumarray
-from ..in_out import soup as io
-from ..fundamentals import Graph, Cuboid
-from ..point_clouds import Point_Cloud
+from . mesh_cleaning import filter_vertices
+
+from .. utils import linalg_utils as utils
+from .. utils.linalg_utils import accumarray
+from .. in_out import soup as io
+from .. fundamentals import Graph, Cuboid
+from .. point_clouds import Point_Cloud
+
 
 # try:
 #     from mayavi import mlab as mayalab
@@ -129,6 +132,16 @@ class Mesh(object):
 
     def connected_components(self):
         return Graph.connected_components(self.adjacency_matrix())
+
+    def largest_connected_component(self):
+        # TODO operates on self or copy?
+        ncc, node_labels = self.connected_components()
+        if ncc == 1:
+            return self
+        unique_labels, counts = np.unique(node_labels, return_counts=True)
+        maximizer = unique_labels[np.argmax(counts)]
+        keep_nodes = np.where(node_labels == maximizer)[0]
+        return filter_vertices(self, keep_nodes)
 
     def barycenter_of_triangles(self):
         tr_in_xyz = self.vertices[self.triangles]
