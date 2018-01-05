@@ -15,7 +15,7 @@ from plotly.offline import iplot
 from .. point_clouds import Point_Cloud
 
 
-def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, show=True):
+def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5), show=True):
     '''Alternative to plotting a mesh with matplotlib.
        TODO Need colorize vertex/faces. more input options'''
 
@@ -24,8 +24,13 @@ def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, show=True):
     if in_u_sphere:
         verts = Point_Cloud(verts).center_in_unit_sphere().points
 
-    fig = plt.figure(figsize=(5, 5))
-    ax = fig.add_subplot(111, projection='3d')
+    if axis is None:
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        ax = axis
+        fig = axis
+
     mesh = Poly3DCollection(verts[faces])
     mesh.set_edgecolor('k')
     ax.add_collection3d(mesh)
