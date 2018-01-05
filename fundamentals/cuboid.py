@@ -66,6 +66,10 @@ class Cuboid(object):
         [xmin, ymin, zmin, xmax, ymax, zmax] = self.extrema
         return (xmax - xmin) * (ymax - ymin) * (zmax - zmin)
 
+    def height(self):
+        [_, _, zmin, _, _, zmax] = self.extrema
+        return zmax - zmin
+
     def intersection_with(self, other):
         [sxmin, symin, szmin, sxmax, symax, szmax] = self.get_extrema()
         [oxmin, oymin, ozmin, oxmax, oymax, ozmax] = other.get_extrema()
