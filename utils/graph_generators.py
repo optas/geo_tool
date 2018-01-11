@@ -3,6 +3,8 @@ Created on December 26, 2017
 
 @author: optas
 TODO: Merge/ re-factor (fundamentals/graph + graph_roles)
+PRELIMINARY CODE - not used/debugged yet. 
+
 '''
 
 import numpy as np
@@ -69,3 +71,20 @@ def gnm_random_graph(n, m, seed=None, directed=False):
             edge_count += 1
 
     return adjacency_from_edges(edges, n)
+
+
+def SBM_from_class_labels(vertex_labels, p_matrix):
+    'stochastic block model'
+    n_vertices = len(vertex_labels)
+    adjacency = np.zeros(shape=(n_vertices, n_vertices), dtype=np.bool)
+    for row, _row in enumerate(adjacency):
+        for col, _col in enumerate(adjacency[row]):
+            community_a = vertex_labels[row]
+            community_b = vertex_labels[col]
+            p = random.random()
+            val = p_matrix[community_a][community_b]
+
+            if p <= val:
+                adjacency[row][col] = 1
+                adjacency[col][row] = 1
+    return adjacency
