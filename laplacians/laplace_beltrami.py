@@ -8,7 +8,9 @@ Created on July 21, 2016
 
 import warnings
 import numpy as np
-from scipy import sparse
+#from scipy import sparse
+import scipy.sparse as sparse
+
 from scipy.sparse.linalg import eigs
 from math import ceil
 
