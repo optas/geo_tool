@@ -51,6 +51,8 @@ def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5
 
 
 def plot_mesh_via_plottly(in_mesh, colormap=cm.RdBu, plot_edges=None, vertex_color=None, show=True):
+    ''' Winnie note: I found most of this code in some online documentation. Unfortunatelly, can't remember where. 
+    '''
     x = in_mesh.vertices[:, 0]
     y = in_mesh.vertices[:, 1]
     z = in_mesh.vertices[:, 2]
@@ -58,7 +60,7 @@ def plot_mesh_via_plottly(in_mesh, colormap=cm.RdBu, plot_edges=None, vertex_col
     tri_vertices = map(lambda index: in_mesh.vertices[index], simplices)    # vertices of the surface triangles
     I, J, K = ([triplet[c] for triplet in simplices] for c in range(3))
 
-    triangles = Mesh3d(x=x, y=y, z=z, vertexcolor=vertex_color, i=I, j=J, k=K, name='')
+    triangles = Mesh3d(x=x, y=y, z=z, i=I, j=J, k=K, name='', intensity=vertex_color)
 
     if plot_edges is None:  # The triangle edges are not plotted.
         res = Data([triangles])
