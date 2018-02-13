@@ -243,6 +243,11 @@ class Mesh(object):
             v1, v2, v3 = tr
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
+    
+    def triangle_weights_from_vertex_weights(self, v_weights):
+        T=self.triangles
+        weights = (v_weights[T[:,0]]+v_weights[T[:,1]]+v_weights[T[:,2]])/3.0
+        return weights
 
     def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
@@ -315,7 +320,7 @@ class Mesh(object):
         self.vertices = Point_Cloud.center_points(self.vertices, center='unit_sphere')
         return self
 
-    def sample_faces(self, n_samples, at_least_one=True, seed=None):
+    def sample_faces(self, n_samples, at_least_one=True, vertex_weights=None, seed=None):
         """Generates a point cloud representing the surface of the mesh by sampling points
         proportionally to the area of each face.
 
@@ -335,6 +340,13 @@ class Mesh(object):
         """
 
         face_areas = self.area_of_triangles()
+        
+        if vertex_weights is not None:
+            face_weights=self.triangle_weights_from_vertex_weights(vertex_weights)
+            if np.any(face_weights < 0):
+                raise ValueError('Negative face weights detected.')
+            face_areas=np.multiply(face_areas,face_weights)
+        
         face_areas = face_areas / np.sum(face_areas)
 
         n_samples_per_face = np.round(n_samples * face_areas)

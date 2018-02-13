@@ -15,7 +15,7 @@ from plotly.offline import iplot
 from .. point_clouds import Point_Cloud
 
 
-def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5), show=True):
+def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5), colormap=cm.RdBu, plot_edges=False, vertex_color=None, show=True):
     '''Alternative to plotting a mesh with matplotlib.
        TODO Need colorize vertex/faces. more input options'''
 
@@ -30,9 +30,22 @@ def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5
     else:
         ax = axis
         fig = axis
-
+    
     mesh = Poly3DCollection(verts[faces])
-    mesh.set_edgecolor('k')
+    
+    if plot_edges:
+        mesh.set_edgecolor('k')
+
+    if vertex_color is not None:
+        #-1 to be consistent with plottly's color mapping
+        face_color=-1*in_mesh.triangle_weights_from_vertex_weights(vertex_color)
+        mappable = cm.ScalarMappable(cmap=colormap)
+        #0.9 to prevent white faces that are hard to see
+        colors = 0.9*mappable.to_rgba(face_color)
+        colors[:,3]=1
+        mesh.set_facecolor(colors)
+
+
     ax.add_collection3d(mesh)
     ax.set_xlabel("x-axis")
     ax.set_ylabel("y-axis")
