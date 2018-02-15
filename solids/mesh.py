@@ -238,17 +238,9 @@ class Mesh(object):
     def sum_vertex_function_on_triangles(self, v_func):
         if len(v_func) != self.num_vertices:
             raise ValueError('Provided vertex function has inappropriate dimensions. ')
-        tr_func = np.zeros((self.num_triangles, 1))
-        for i, tr in enumerate(self.triangles):
-            v1, v2, v3 = tr
-            tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
-        return tr_func
-
-    def triangle_weights_from_vertex_weights(self, v_weights):
         T = self.triangles
-        weights = (v_weights[T[:, 0]] + v_weights[T[:, 1]] + v_weights[T[:, 2]]) / 3.0
-        assert(np.all(weights == self.sum_vertex_function_on_triangles(v_weights) / 3.0))
-        return weights
+        tr_func = v_func[T[:, 0]] + v_func[T[:, 1]] + v_func[T[:, 2]]
+        return tr_func
 
     def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
