@@ -243,10 +243,11 @@ class Mesh(object):
             v1, v2, v3 = tr
             tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
         return tr_func
-    
+
     def triangle_weights_from_vertex_weights(self, v_weights):
-        T=self.triangles
-        weights = (v_weights[T[:,0]]+v_weights[T[:,1]]+v_weights[T[:,2]])/3.0
+        T = self.triangles
+        weights = (v_weights[T[:, 0]] + v_weights[T[:, 1]] + v_weights[T[:, 2]]) / 3.0
+        assert(np.all(weights == self.sum_vertex_function_on_triangles(v_weights) / 3.0))
         return weights
 
     def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
@@ -321,20 +322,35 @@ class Mesh(object):
         return self
 
     def sample_faces(self, n_samples, vertex_weights=None, seed=None):
+        """Generates a point cloud representing the surface of the mesh by sampling points proportionally to the area of each face.
+
+        Args:
+            n_samples (int) : number of points to be sampled in total
+        Returns:
+            numpy array (n_samples, 3) containing the [x,y,z] coordinates of the samples.
+
+        Reference :
+          http://chrischoy.github.in_out/research/barycentric-coordinate-for-mesh-sampling/
+          [1] Barycentric coordinate system
+
+          \begin{align}
+            P = (1 - \sqrt{r_1})A + \sqrt{r_1} (1 - r_2) B + \sqrt{r_1} r_2 C
+          \end{align}
+        """
 
         face_areas = self.area_of_triangles()
 
         if vertex_weights is not None:
-            face_weights=self.triangle_weights_from_vertex_weights(vertex_weights)
-            if np.any(face_weights < 0):
-                raise ValueError('Negative face weights detected.')
-            face_areas=np.multiply(face_areas, face_weights)
+            if np.any(vertex_weights < 0):
+                raise ValueError('Negative vertex weights detected.')
+            face_weights = self.sum_vertex_function_on_triangles(vertex_weights)
+            face_areas = np.multiply(face_areas, face_weights)
 
-        #normalize
-        face_areas = face_areas / np.sum(face_areas)
+        face_areas = face_areas / np.sum(face_areas)    # Convert to probability.
 
         if seed is not None:
             np.random.seed(seed)
+
         sample_face_idx = np.random.choice(self.num_triangles, n_samples, p=face_areas)
 
         r = np.random.rand(n_samples, 2)

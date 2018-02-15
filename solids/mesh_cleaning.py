@@ -102,6 +102,7 @@ def clean_degenerate_triangles(self, verbose=False):
             if verbose:
                 print('Deleting triangles with zero area.')
             self.triangles = self.triangles[good_tr, :]
+
     assert(all(self.area_of_triangles() > 0))
 
     A = self.angles_of_triangles()
