@@ -13,8 +13,8 @@ import numpy as np
 import matplotlib.cm as cm 
 from scipy.linalg import eigh
 from numpy.matlib import repmat
-from six.moves import cPickle    
-    
+from six.moves import cPickle
+
 try:
     from sklearn.neighbors import NearestNeighbors
 except:
@@ -101,10 +101,10 @@ class Point_Cloud(object):
         x = self.points[:, 0]
         y = self.points[:, 1]
         z = self.points[:, 2]
-        
-        if 'c' in kwargs: # You can't provide both 'c' and 'color'.
+
+        if 'c' in kwargs:   # You can't provide both 'c' and 'color'.
             color = None
-            
+
         return Point_Cloud.plot_3d_point_cloud(x, y, z, show=show, show_axis=show_axis, in_u_sphere=in_u_sphere, marker=marker, s=s, alpha=alpha, figsize=figsize,
                                                color=color, axis=axis, elev=elev, azim=azim, *args, **kwargs)
 
@@ -238,14 +238,14 @@ class Point_Cloud(object):
 
     @staticmethod
     def plot_3d_point_cloud(x, y, z, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), elev=10, azim=240, axis=None, *args, **kwargs):
-        
+
         if axis is None:
             fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111, projection='3d')
         else:
             ax = axis
             fig = axis
-        
+
         sc = ax.scatter(x, y, z, marker=marker, s=s, alpha=alpha, *args, **kwargs)
         ax.view_init(elev=elev, azim=azim)
 
@@ -256,13 +256,13 @@ class Point_Cloud(object):
 
         if not show_axis:
             plt.axis('off')
-         
+
         if 'c' in kwargs:
             plt.colorbar(sc)
-            
-        if show:            
-            im = plt.show()
-            
+
+        if show:
+            plt.show()
+
         return fig
 
     @staticmethod
