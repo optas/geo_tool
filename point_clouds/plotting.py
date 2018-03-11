@@ -5,6 +5,8 @@ Created on July 11, 2017
 '''
 import numpy
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
 try:
     from mayavi import mlab as mayalab
 except:
@@ -31,6 +33,10 @@ def plot_pclouds_on_grid(pclouds, grid_size, fig_size=(50, 50), plot_kwargs={}):
         c += 1
     return fig
 
+def scalars_to_colors(float_vals, colormap=cm.viridis):
+    mappable = cm.ScalarMappable(cmap=colormap)
+    colors = mappable.to_rgba(float_vals)    
+    return colors
 
 def plot_vector_field_mayavi(points, vx, vy, vz):
     mayalab.quiver3d(points[:, 0], points[:, 1], points[:, 2], vx, vy, vz)
