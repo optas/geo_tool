@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from scipy.sparse.linalg import eigs
+from numpy.linalg import norm
 
 from ..fundamentals import Graph
 from ..utils.linalg_utils import l2_norm
@@ -46,3 +47,24 @@ def laplacian_spectrum(pc, n_evecs, k=6):
     evals = evals[index]
     evecs = evecs[:, index]
     return evals, evecs
+
+
+def unit_cube_grid_point_cloud(resolution, clip_sphere=False):
+    '''Returns the center coordinates of each cell of a 3D grid with resolution^3 cells,
+    that is placed in the unit-cube.
+    If clip_sphere it True it drops the "corner" cells that lie outside the unit-sphere.
+    '''
+    grid = np.ndarray((resolution, resolution, resolution, 3), np.float32)
+    spacing = 1.0 / float(resolution - 1)
+    for i in xrange(resolution):
+        for j in xrange(resolution):
+            for k in xrange(resolution):
+                grid[i, j, k, 0] = i * spacing - 0.5
+                grid[i, j, k, 1] = j * spacing - 0.5
+                grid[i, j, k, 2] = k * spacing - 0.5
+
+    if clip_sphere:
+        grid = grid.reshape(-1, 3)
+        grid = grid[norm(grid, axis=1) <= 0.5]
+
+    return grid, spacing
