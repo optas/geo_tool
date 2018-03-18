@@ -127,12 +127,18 @@ class Mesh(object):
     def directed_edges(self):
         ''' For each triangle (A,B,C) we consider the edges (A,B) and (B,C), i.e., the direction comes from
         the order the vertices are listed in the triangles.
-        TODO-L.
+        TODO-P.
         '''
         pass
 
     def boundary(self):
         ''' https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/5355/versions/5/previews/toolbox_graph/compute_boundary.m/index.html?access_key=
+        '''
+        pass
+
+    def correct_mesh_orientation(self):
+        '''https://github.com/scikit-image/scikit-image/blob/master/skimage/measure/_marching_cubes_classic.py
+        TODO-L
         '''
         pass
 
