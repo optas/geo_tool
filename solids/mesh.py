@@ -117,13 +117,24 @@ class Mesh(object):
         mayalab.show()
 
     def undirected_edges(self):
-        # TODO - avoid double counting (see unique_rows) + make a version for directed
         perm_gen = lambda x: list(itertools.permutations(x, 2))
         edges = np.zeros(shape=(self.num_triangles, 6, 2), dtype=np.int32)  # Each triangle produces 6 undirected edges.
         for i, t in enumerate(self.triangles):
             edges[i, :] = perm_gen(t)
         edges.resize(self.num_triangles * 6, 2)
         return unique_rows(edges)
+
+    def directed_edges(self):
+        ''' For each triangle (A,B,C) we consider the edges (A,B) and (B,C), i.e., the direction comes from
+        the order the vertices are listed in the triangles.
+        TODO-L.
+        '''
+        pass
+
+    def boundary(self):
+        ''' https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/5355/versions/5/previews/toolbox_graph/compute_boundary.m/index.html?access_key=
+        '''
+        pass
 
     def adjacency_matrix(self):
         E = self.undirected_edges()

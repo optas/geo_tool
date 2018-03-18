@@ -201,3 +201,10 @@ def extrinsic_laplacian(in_mesh, num_eigs):
     evecsy = np.sum(evecsy.real, axis=1)
     evecsz = np.sum(evecsz.real, axis=1)
     return np.vstack((evecsx, evecsy, evecsz))
+
+
+def hight_field(in_mesh):
+    '''TODO-W
+    '''
+    pass
+
