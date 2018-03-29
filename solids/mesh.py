@@ -118,13 +118,31 @@ class Mesh(object):
         mayalab.show()
 
     def undirected_edges(self):
-        # TODO - avoid double counting (see unique_rows) + make a version for directed
         perm_gen = lambda x: list(itertools.permutations(x, 2))
         edges = np.zeros(shape=(self.num_triangles, 6, 2), dtype=np.int32)  # Each triangle produces 6 undirected edges.
         for i, t in enumerate(self.triangles):
             edges[i, :] = perm_gen(t)
         edges.resize(self.num_triangles * 6, 2)
         return unique_rows(edges)
+
+    def directed_edges(self):
+        ''' For each triangle (A,B,C) we consider the edges (A,B) and (B,C), i.e., the direction comes from
+        the order the vertices are listed in the triangles.
+        TODO-P.
+        '''
+        pass
+
+    def boundary(self):
+        ''' TODO-P
+        https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/5355/versions/5/previews/toolbox_graph/compute_boundary.m/index.html?access_key=
+        '''
+        pass
+
+    def correct_mesh_orientation(self):
+        '''https://github.com/scikit-image/scikit-image/blob/master/skimage/measure/_marching_cubes_classic.py
+        TODO-L
+        '''
+        pass
 
     def adjacency_matrix(self):
         E = self.undirected_edges()
@@ -239,10 +257,8 @@ class Mesh(object):
     def sum_vertex_function_on_triangles(self, v_func):
         if len(v_func) != self.num_vertices:
             raise ValueError('Provided vertex function has inappropriate dimensions. ')
-        tr_func = np.zeros((self.num_triangles, 1))
-        for i, tr in enumerate(self.triangles):
-            v1, v2, v3 = tr
-            tr_func[i] = v_func[v1] + v_func[v2] + v_func[v3]
+        T = self.triangles
+        tr_func = v_func[T[:, 0]] + v_func[T[:, 1]] + v_func[T[:, 2]]
         return tr_func
     
     def triangle_weights_from_vertex_weights(self, v_weights):
@@ -327,19 +343,35 @@ class Mesh(object):
 
     def sample_faces(self, n_samples, vertex_weights=None, seed=None,compute_normals=False):
 
+        """Generates a point cloud representing the surface of the mesh by sampling points proportionally to the area of each face.
+
+        Args:
+            n_samples (int) : number of points to be sampled in total
+        Returns:
+            numpy array (n_samples, 3) containing the [x,y,z] coordinates of the samples.
+
+        Reference :
+          http://chrischoy.github.in_out/research/barycentric-coordinate-for-mesh-sampling/
+          [1] Barycentric coordinate system
+
+          \begin{align}
+            P = (1 - \sqrt{r_1})A + \sqrt{r_1} (1 - r_2) B + \sqrt{r_1} r_2 C
+          \end{align}
+        """
+
         face_areas = self.area_of_triangles()
 
         if vertex_weights is not None:
-            face_weights=self.triangle_weights_from_vertex_weights(vertex_weights)
-            if np.any(face_weights < 0):
-                raise ValueError('Negative face weights detected.')
-            face_areas=np.multiply(face_areas, face_weights)
+            if np.any(vertex_weights < 0):
+                raise ValueError('Negative vertex weights detected.')
+            face_weights = self.sum_vertex_function_on_triangles(vertex_weights)
+            face_areas = np.multiply(face_areas, face_weights)
 
-        #normalize
-        face_areas = face_areas / np.sum(face_areas)
+        face_areas = face_areas / np.sum(face_areas)    # Convert to probability.
 
         if seed is not None:
             np.random.seed(seed)
+
         sample_face_idx = np.random.choice(self.num_triangles, n_samples, p=face_areas)
 
         r = np.random.rand(n_samples, 2)

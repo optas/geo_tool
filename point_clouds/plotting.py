@@ -5,6 +5,7 @@ Created on July 11, 2017
 '''
 import numpy
 import matplotlib.pyplot as plt
+
 try:
     from mayavi import mlab as mayalab
 except:
