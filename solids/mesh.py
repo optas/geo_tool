@@ -24,8 +24,6 @@ from .. in_out import soup as io
 from .. fundamentals import Graph, Cuboid
 from .. point_clouds import Point_Cloud
 
-import tqdm
-
 # try:
 #     from mayavi import mlab as mayalab
 # except:
@@ -260,11 +258,6 @@ class Mesh(object):
         T = self.triangles
         tr_func = v_func[T[:, 0]] + v_func[T[:, 1]] + v_func[T[:, 2]]
         return tr_func
-    
-    def triangle_weights_from_vertex_weights(self, v_weights):
-        T=self.triangles
-        weights = (v_weights[T[:,0]]+v_weights[T[:,1]]+v_weights[T[:,2]])/3.0
-        return weights
 
     def barycentric_interpolation_of_vertex_function(self, v_func, key_points, faces_of_key_points):
         ''' It computes the linearly interpolated values of a vertex function, over a set of 3D key-points that
@@ -312,16 +305,12 @@ class Mesh(object):
         '''
         V = self.vertices
         T = self.triangles
-        normalize=True
-        #normals, if not normalized, are already weighted by area
+
+        normals = Mesh.normals_of_triangles(V, T, normalize=True)
         if weight == 'areas':
-            normalize = False
-        #    weights = self.area_of_triangles()
-        #    normals = (normals.T * weights).T
-        normals = Mesh.normals_of_triangles(V, T,normalize=True)
-        #nx = accumarray(T.ravel('C'), repmat(normals[:, 0],3,1).transpose().ravel('C'))
-        #ny = accumarray(T.ravel('C'), repmat(normals[:, 1],3,1).transpose().ravel('C'))
-        #nz = accumarray(T.ravel('C'), repmat(normals[:, 2],3,1).transpose().ravel('C'))
+            weights = self.area_of_triangles()
+            normals = (normals.T * weights).T
+
         nx = accumarray(T.ravel('C'), repmat(np.array([normals[:, 0]]).T, 1, 3).ravel('C'))
         ny = accumarray(T.ravel('C'), repmat(np.array([normals[:, 1]]).T, 1, 3).ravel('C'))
         nz = accumarray(T.ravel('C'), repmat(np.array([normals[:, 2]]).T, 1, 3).ravel('C'))
@@ -341,14 +330,16 @@ class Mesh(object):
         self.vertices = Point_Cloud.center_points(self.vertices, center='unit_sphere')
         return self
 
-    def sample_faces(self, n_samples, vertex_weights=None, seed=None,compute_normals=False):
-
+    def sample_faces(self, n_samples, vertex_weights=None, seed=None, compute_normals=False):
         """Generates a point cloud representing the surface of the mesh by sampling points proportionally to the area of each face.
 
         Args:
             n_samples (int) : number of points to be sampled in total
+            vertex_weights ():
+            compute_normals (boolean):
         Returns:
             numpy array (n_samples, 3) containing the [x,y,z] coordinates of the samples.
+            If compute_normals is True: 
 
         Reference :
           http://chrischoy.github.in_out/research/barycentric-coordinate-for-mesh-sampling/
@@ -381,15 +372,16 @@ class Mesh(object):
         m = np.sqrt(r[:, 0:1])
         n = r[:, 1:]
         P = (1 - m) * A + m * (1 - n) * B + m * n * C
-        
-        #if normals are computed, returns Nx6 matrices instead
+
+        # If normals are computed, returns Nx6 matrices where last 3 are the normals.
         if compute_normals:
-            nV=self.normals_of_vertices(normalize=True)
+            nV = self.normals_of_vertices(normalize=True)
             nA = nV[self.triangles[sample_face_idx, 0], :]
             nB = nV[self.triangles[sample_face_idx, 1], :]
             nC = nV[self.triangles[sample_face_idx, 2], :]
             nP = (1 - m) * nA + m * (1 - n) * nB + m * n * nC
-            P=np.append(P,nP,axis=1)
+            P = np.append(P, nP, axis=1)
+
         return P, sample_face_idx
 
     def swap_axes_of_vertices(self, permutation):
@@ -430,7 +422,7 @@ class Mesh(object):
         v123 = P1[:, 0] * P2[:, 1] * P3[:, 2]
         return (1.0 / 6.0) * np.sum(-v321 + v231 + v312 - v132 - v213 + v123)
 #         return (1.0 / 6.0) * np.sum((np.cross(P2, P3) * P1))  # Faster but a bit more unstable version.
-    
+
     @staticmethod
     def __decorate_mesh_with_triangle_color(mesh_plot, triangle_function):   # TODO-P do we really need this to be static?
         mesh_plot.mlab_source.dataset.cell_data.scalars = triangle_function

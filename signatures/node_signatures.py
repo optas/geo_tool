@@ -85,7 +85,11 @@ def heat_kernel_embedding(lb, n_eigs, n_time):
     time_points = hks_time_sample_generator(evals[0], evals[-1], n_time)
     return heat_kernel_signature(evals, evecs.T, time_points)
 
+
 def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
+    ''' TODO-L: dirty single check that two versions are np.all_close(A,B).
+    Add some doc-string.
+    ''''
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
     if verbose:
@@ -120,23 +124,6 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
 
     return [math.exp(i) for i in logts]
 
-#parameters from original paper
-#  emin= e_1+2*sigma
-#  emax= e_n-2*sigma
-# delta= (emax-emin)/M
-# sigma= 7*delta
-
-def wks_energy_generator_aubry(min_eval, max_eval, time_points):
-    width=1
-    if min_eval==0:
-        raise ValueError('minimum eigenvalue must not be zero.')
-    delta = (math.log(max_eval)-math.log(min_eval))/(time_points+width*14)
-    sigma=7*delta
-    emin = math.log(min_eval)+width*sigma
-    emax = math.log(max_eval)-width*sigma
-    res = [emin+i*delta for i in range(time_points)]
-
-    return res, sigma
 
 def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
     if len(evals) != evecs.shape[0]:
@@ -174,21 +161,22 @@ def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
     assert(np.alltrue(signatures >= 0))
     return signatures
 
-def wks_energy_generator(min_eval, max_eval, time_points, shrink=1):
+
+def wks_energy_generator(min_eval, max_eval, time_points, width=1, padding=10, shrink=1):
+    '''TODO-L: add-doc-string brief descriptions.
+    + make one by combining with below. 
+    '''
     emin = math.log(min_eval)
     if shrink != 1:
         emax = math.log(max_eval) / float(shrink)
     else:
         emax = math.log(max_eval)
 
-    emin = abs(emin)
-    emax = abs(emax)
-
     if emax <= emin:
         print "Warning: too much shrink. - Will be set manually."
         emax = emin + 0.05 * emin
 
-    delta = (emax - emin) / time_points
+    delta = (emax - emin) /  (time_points + width* )
     sigma = 10 * delta
 
     res = [emin]
@@ -196,6 +184,27 @@ def wks_energy_generator(min_eval, max_eval, time_points, shrink=1):
         res.append(res[-1] + delta)
     assert(utils.is_increasing(res))
     return res, sigma
+
+
+def wks_energy_generator_aubry(min_eval, max_eval, time_points):
+    #parameters from original paper
+    #  emin= e_1+2*sigma
+    #  emax= e_n-2*sigma
+    # delta= (emax-emin)/M
+    # sigma= 7*delta
+
+    width = 1
+    if min_eval == 0:
+        raise ValueError('minimum eigenvalue must not be zero.')
+    delta = (math.log(max_eval) - math.log(min_eval)) / (time_points+width*14)
+    
+    sigma = 7 * delta
+    emin = math.log(min_eval) + width * sigma
+    emax = math.log(max_eval) - width * sigma
+    res = [emin+i*delta for i in range(time_points)]
+    return res, sigma
+
+
 
 
 def merge_component_spectra(in_mesh, in_lb, percent_of_eigs, merger=np.sum):
@@ -224,9 +233,3 @@ def extrinsic_laplacian(in_mesh, num_eigs):
     evecsy = np.sum(evecsy.real, axis=1)
     evecsz = np.sum(evecsz.real, axis=1)
     return np.vstack((evecsx, evecsy, evecsz))
-
-
-def hight_field(in_mesh):
-    '''TODO-W
-    '''
-    pass

@@ -254,8 +254,8 @@ class Point_Cloud(object):
             ax.set_ylim3d(-0.5, 0.5)
             ax.set_zlim3d(-0.5, 0.5)
         else:
-            miv = 0.7*np.min([np.min(x),np.min(y),np.min(z)])
-            mav = 0.7*np.max([np.max(x),np.max(y),np.max(z)])
+            miv = 0.7 * np.min([np.min(x), np.min(y), np.min(z)])  # Multiply with 0.7 to squeeze free-space.
+            mav = 0.7 * np.max([np.max(x), np.max(y), np.max(z)])
             ax.set_xlim(miv, mav)
             ax.set_ylim(miv, mav)
             ax.set_zlim(miv, mav)
