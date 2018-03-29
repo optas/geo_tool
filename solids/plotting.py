@@ -15,7 +15,7 @@ from plotly.offline import iplot
 from .. point_clouds import Point_Cloud
 
 
-def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5), show=True):
+def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figure=None, figsize=(5, 5), gspec=111, colormap=cm.viridis, plot_edges=False, vertex_color=None, show=True):
     '''Alternative to plotting a mesh with matplotlib.
        TODO Need colorize vertex/faces. more input options'''
 
@@ -24,22 +24,37 @@ def plot_mesh_via_matplotlib(in_mesh, in_u_sphere=True, axis=None, figsize=(5, 5
     if in_u_sphere:
         verts = Point_Cloud(verts).center_in_unit_sphere().points
 
-    if axis is None:
+    if figure is None:
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection='3d')
+    else:
+        fig = figure
+
+    if axis is None:
+        ax = fig.add_subplot(gspec, projection='3d')
     else:
         ax = axis
-        fig = axis
-
+    
     mesh = Poly3DCollection(verts[faces])
-    mesh.set_edgecolor('k')
+    
+    if plot_edges:
+        mesh.set_edgecolor('k')
+
+    if vertex_color is not None:
+        
+        face_color=in_mesh.triangle_weights_from_vertex_weights(vertex_color)
+        mappable = cm.ScalarMappable(cmap=colormap)
+        colors = mappable.to_rgba(face_color)
+        colors[:,3]=1
+        mesh.set_facecolor(colors)
+
+
     ax.add_collection3d(mesh)
     ax.set_xlabel("x-axis")
     ax.set_ylabel("y-axis")
     ax.set_zlabel("z-axis")
 
-    miv = np.min(verts)
-    mav = np.max(verts)
+    miv = 0.7*np.min(verts)
+    mav = 0.7*np.max(verts)
     ax.set_xlim(miv, mav)
     ax.set_ylim(miv, mav)
     ax.set_zlim(miv, mav)

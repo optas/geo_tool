@@ -85,7 +85,6 @@ def heat_kernel_embedding(lb, n_eigs, n_time):
     time_points = hks_time_sample_generator(evals[0], evals[-1], n_time)
     return heat_kernel_signature(evals, evecs.T, time_points)
 
-
 def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
@@ -96,18 +95,13 @@ def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     e = np.e
     signatures = np.empty((n, len(time_horizon)))
     squared_evecs = np.square(evecs)
-    squared_evecs = np.transpose(squared_evecs)
+#    squared_evecs = np.transpose(squared_evecs)
 
     for t, tp in enumerate(time_horizon):
-        interm = e**(-tp * evals)
-#         if interm < 10e-5:
-#             signatures[:, t] = 0
-#             continue
-#         normFactor = 1 / np.sum(interm)
-#         print normFactor
-        for i in xrange(n):
-            # signatures[i, t] = np.dot(interm, squared_evecs[i]) * normFactor
-            signatures[i, t] = np.dot(interm, squared_evecs[i])
+        interm = np.exp(-tp * evals)
+        signatures[:,t] = np.matmul(interm,squared_evecs)
+        #for i in xrange(n):
+        #    signatures[i, t] = np.dot(interm, squared_evecs[i])
     return signatures
 
 
@@ -126,6 +120,23 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
 
     return [math.exp(i) for i in logts]
 
+#parameters from original paper
+#  emin= e_1+2*sigma
+#  emax= e_n-2*sigma
+# delta= (emax-emin)/M
+# sigma= 7*delta
+
+def wks_energy_generator_aubry(min_eval, max_eval, time_points):
+    width=1
+    if min_eval==0:
+        raise ValueError('minimum eigenvalue must not be zero.')
+    delta = (math.log(max_eval)-math.log(min_eval))/(time_points+width*14)
+    sigma=7*delta
+    emin = math.log(min_eval)+width*sigma
+    emax = math.log(max_eval)-width*sigma
+    res = [emin+i*delta for i in range(time_points)]
+
+    return res, sigma
 
 def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
     if len(evals) != evecs.shape[0]:
@@ -134,22 +145,34 @@ def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
         print "Computing Wave Kernel Signature with %d eigen-pairs." % (len(evals),)
 
     n = evecs.shape[1]  # Number of nodes.
-    e = math.exp(1)
-    log = np.log
     signatures = np.empty((n, len(energies)))
-
     squared_evecs = np.square(evecs)
-    squared_evecs = np.transpose(squared_evecs)
-    sigma = 2 * (sigma**2)
+    log_evals=np.log(evals)
+    
+    var = 2 * (sigma**2)
     for t, en in enumerate(energies):
-        interm = e ** (-1 * (((en - log(evals))**2) / sigma))
-        norm_factor = 1 / np.sum(interm)
-        for i in xrange(n):
-            signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
+        interm = np.exp(-(en-log_evals)**2/var)
+        norm_factor = np.sum(interm)
+        if norm_factor == 0:
+            signatures=signatures[:,:t]
+            break
+        signatures[:,t] = np.matmul(interm,squared_evecs) / norm_factor
+
+    #e = math.exp(1)
+    #log = np.log
+    #signatures = np.empty((n, len(energies)))
+
+    #squared_evecs = np.square(evecs)
+    #squared_evecs = np.transpose(squared_evecs)
+    #sigma = 2 * (sigma**2)
+    #for t, en in enumerate(energies):
+    #    interm = e ** (-1 * (((en - log(evals))**2) / sigma))
+    #    norm_factor = 1 / np.sum(interm)
+        #for i in xrange(n):
+        #    signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
 
     assert(np.alltrue(signatures >= 0))
     return signatures
-
 
 def wks_energy_generator(min_eval, max_eval, time_points, shrink=1):
     emin = math.log(min_eval)

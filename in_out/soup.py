@@ -239,14 +239,16 @@ def save_as_ply(points, file_out, normals=None, color=None, binary=True):
 
 
 def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
-    break_floats = lambda in_file : [vdtype(s) for s in in_file.readline().strip().split(' ')]
+#    break_floats = lambda in_file : [vdtype(s) for s in in_file.readline().strip().split(' ')]
+    break_floats = lambda in_file : [vdtype(s) for s in in_file.readline().strip().split()]
 
     with open(file_name, 'r') as f_in:
         header = f_in.readline().strip()
         if header not in ['OFF', 'COFF']:
             raise ValueError('Not a valid OFF header.')
 
-        n_verts, n_faces, _ = tuple([tdtype(s) for s in f_in.readline().strip().split(' ')])    # Disregard 3rd argument: n_edges.
+#        n_verts, n_faces, _ = tuple([tdtype(s) for s in f_in.readline().strip().split(' ')])    # Disregard 3rd argument: n_edges.
+        n_verts, n_faces, _ = tuple([tdtype(s) for s in f_in.readline().strip().split()])    # Disregard 3rd argument: n_edges.
 
         verts = np.empty((n_verts, 3), dtype=vdtype)
         v_color = None
@@ -263,7 +265,8 @@ def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
             for i in xrange(1, n_verts):
                 verts[i, :] = break_floats(f_in)
 
-        first_line = [s for s in f_in.readline().strip().split(' ')]
+        first_line = [s for s in f_in.readline().strip().split()]
+#        first_line = [s for s in f_in.readline().strip().split(' ')]
         poly_type = int(first_line[0])   # 3 for triangular mesh, 4 for quads etc.
         faces = np.empty((n_faces, poly_type), dtype=tdtype)
         faces[0:] = [tdtype(f) for f in first_line[1:poly_type + 1]]
@@ -272,7 +275,8 @@ def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
             f_color = np.empty((n_faces, 4), dtype=vdtype)
             f_color[0, :] = first_line[poly_type + 1:]
             for i in xrange(1, n_faces):
-                line = [s for s in f_in.readline().strip().split(' ')]
+                line = [s for s in f_in.readline().strip().split()]
+#                line = [s for s in f_in.readline().strip().split(' ')]
                 ptype = int(line[0])
                 if ptype != poly_type:
                     raise ValueError('Mesh contains faces of different dimensions. Loader in not yet implemented for this case.')
@@ -280,7 +284,8 @@ def load_off(file_name, vdtype=np.float32, tdtype=np.int32):
                 f_color[i, :] = [vdtype(f) for f in line[ptype + 1:]]
         else:
             for i in xrange(1, n_faces):
-                line = [tdtype(s) for s in f_in.readline().strip().split(' ')]
+                line = [tdtype(s) for s in f_in.readline().strip().split()]
+#                line = [tdtype(s) for s in f_in.readline().strip().split(' ')]
                 if line[0] != poly_type:
                     raise ValueError('Mesh contains faces of different dimensions. Loader in not yet implemented for this case.')
                 faces[i, :] = line[1:]
