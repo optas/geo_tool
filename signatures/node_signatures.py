@@ -1,9 +1,10 @@
 '''
 Created on June 14, 2016
 
-@author:    Panos Achlioptas
+@author:    Panos Achlioptas.
 @contact:   pachlioptas @ gmail.com
 @copyright: You are free to use, change, or redistribute this code in any way you want for non-commercial purposes.
+@updated:   Winnie Lin (winniepwlin1994@gmail.com), March 2018.
 '''
 
 import numpy as np
@@ -88,7 +89,7 @@ def heat_kernel_embedding(lb, n_eigs, n_time):
 
 def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the heat kernel signature at each time point within the time_horizon.
-    
+
     input dimensions:
         evecs = (n_vecs, n_vertices)
         evals = (n_vecs,)
@@ -103,12 +104,11 @@ def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
         print "Computing Heat Kernel Signature with %d eigen-pairs." % (len(evals),)
 
     n = evecs.shape[1]  # Number of nodes.
-    e = np.e
     signatures = np.empty((n, len(time_horizon)))
-    squared_evecs = np.square(evecs)    
+    squared_evecs = np.square(evecs)
     for t, tp in enumerate(time_horizon):
         interm = np.exp(-tp * evals)
-        signatures[:,t] = np.matmul(interm,squared_evecs)
+        signatures[:, t] = np.matmul(interm, squared_evecs)
 
     return signatures
 
@@ -119,7 +119,7 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
 
     output dimensions = [time_points]
     '''
-    
+
     if max_eval <= min_eval or min_eval <= 0:
         raise ValueError('Two non-negative and sorted eigen-values are expected as input.')
 
@@ -137,7 +137,7 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
 
 def wave_kernel_signature(evals, evecs, energies, sigma=1):
     ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the wave kernel signature at each time point within the time_horizon.
-    
+
     input dimensions:
         evecs = (n_vecs, n_vertices)
         evals = (n_vecs,)
@@ -151,14 +151,14 @@ def wave_kernel_signature(evals, evecs, energies, sigma=1):
     n = evecs.shape[1]  # Number of nodes.
     signatures = np.empty((n, len(energies)))
     squared_evecs = np.square(evecs)
-        
-    log_evals=np.log(evals)
+
+    log_evals = np.log(evals)
     var = 2 * (sigma**2)
     for t, en in enumerate(energies):
-        interm = np.exp(-(en-log_evals)**2/var)
+        interm = np.exp(-(en - log_evals) ** 2 / var)
         norm_factor = 1 / np.sum(interm)
-        signatures[:,t] = np.matmul(interm,squared_evecs) * norm_factor
-    
+        signatures[:, t] = np.matmul(interm, squared_evecs) * norm_factor
+
     assert(np.alltrue(signatures >= 0))
     return signatures
 
@@ -182,8 +182,7 @@ def wks_energy_generator(min_eval, max_eval, time_points, padding=7, shrink=1):
 
     logmin = math.log(min_eval)
     logmax = math.log(max_eval)
-    logmax = shrink*logmax + (1-shrink)*logmin
-    
+    logmax = shrink * logmax + (1 - shrink) * logmin
     #if shrink != 1:
     #    emax = math.log(max_eval) / float(shrink)
     #else:
@@ -192,11 +191,11 @@ def wks_energy_generator(min_eval, max_eval, time_points, padding=7, shrink=1):
     #    print "Warning: too much shrink. - Will be set manually."
     #    emax = emin + 0.05 * emin
 
-    delta = (logmax - logmin) / (time_points + 2*padding)
+    delta = (logmax - logmin) / (time_points + 2 * padding)
     sigma = padding * delta
     emin = logmin + sigma
-    emin = logmax - sigma
-    res = [emin+i*delta for i in range(time_points)] 
+    emin = logmax - sigma     # BUG?
+    res = [emin + i * delta for i in range(time_points)]
     return res, sigma
 
 
