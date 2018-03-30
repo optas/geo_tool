@@ -86,7 +86,7 @@ def heat_kernel_embedding(lb, n_eigs, n_time):
     return heat_kernel_signature(evals, evecs.T, time_points)
 
 
-def heat_kernel_signature(evals, evecs, time_horizon, verbose=False, old=False):
+def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the heat kernel signature at each time point within the time_horizon.
     
     input dimensions:
@@ -105,19 +105,10 @@ def heat_kernel_signature(evals, evecs, time_horizon, verbose=False, old=False):
     n = evecs.shape[1]  # Number of nodes.
     e = np.e
     signatures = np.empty((n, len(time_horizon)))
-    squared_evecs = np.square(evecs)
-    
-    if old:
-        print 'using legacy'
-        squared_evecs = np.transpose(squared_evecs)
-        for t, tp in enumerate(time_horizon):
-            interm = np.exp(-tp * evals)
-            for i in xrange(n):
-                signatures[i, t] = np.dot(interm, squared_evecs[i])
-    else:
-        for t, tp in enumerate(time_horizon):
-            interm = np.exp(-tp * evals)
-            signatures[:,t] = np.matmul(interm,squared_evecs)
+    squared_evecs = np.square(evecs)    
+    for t, tp in enumerate(time_horizon):
+        interm = np.exp(-tp * evals)
+        signatures[:,t] = np.matmul(interm,squared_evecs)
 
     return signatures
 
@@ -144,7 +135,7 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
     return [math.exp(i) for i in logts]
 
 
-def wave_kernel_signature(evals, evecs, energies, sigma=1,old=False):
+def wave_kernel_signature(evals, evecs, energies, sigma=1):
     ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the wave kernel signature at each time point within the time_horizon.
     
     input dimensions:
@@ -153,32 +144,20 @@ def wave_kernel_signature(evals, evecs, energies, sigma=1,old=False):
         energies = [n_timepoints]
     output dimensions = (n_vertices,n_timepoints)
     '''
-    
+
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
 
     n = evecs.shape[1]  # Number of nodes.
     signatures = np.empty((n, len(energies)))
     squared_evecs = np.square(evecs)
-    
-    if old:
-        e = math.exp(1)
-        log = np.log
-        signatures = np.empty((n, len(energies)))
-        squared_evecs = np.transpose(squared_evecs)
-        sigma = 2 * (sigma**2)
-        for t, en in enumerate(energies):
-            interm = e ** (-1 * (((en - log(evals))**2) / sigma))
-            norm_factor = 1 / np.sum(interm)
-            for i in xrange(n):
-                signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
-    else:
-        log_evals=np.log(evals)
-        var = 2 * (sigma**2)
-        for t, en in enumerate(energies):
-            interm = np.exp(-(en-log_evals)**2/var)
-            norm_factor = 1 / np.sum(interm)
-            signatures[:,t] = np.matmul(interm,squared_evecs) * norm_factor
+        
+    log_evals=np.log(evals)
+    var = 2 * (sigma**2)
+    for t, en in enumerate(energies):
+        interm = np.exp(-(en-log_evals)**2/var)
+        norm_factor = 1 / np.sum(interm)
+        signatures[:,t] = np.matmul(interm,squared_evecs) * norm_factor
     
     assert(np.alltrue(signatures >= 0))
     return signatures
