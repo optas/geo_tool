@@ -123,15 +123,11 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
     if max_eval <= min_eval or min_eval <= 0:
         raise ValueError('Two non-negative and sorted eigen-values are expected as input.')
 
-    tmin = math.log(10) / max_eval
-    tmax = math.log(10) / min_eval
-    assert(tmax > tmin)
-    stepsize = (math.log(tmax) - math.log(tmin)) / time_points
-    logts = [math.log(tmin)]
-
-    for _ in xrange(time_points - 1):
-        logts.append(logts[-1] + stepsize)
-
+    logtmin = math.log(math.log(10) / max_eval)
+    logtmax = math.log(math.log(10) / min_eval)
+    assert(logtmax > logtmin) 
+    stepsize = (logtmax - logtmin) / (time_points - 1) #minus 1 is to ensure we reach max
+    logts = [logtmin + i * stepsize for i in range(time_points)]
     return [math.exp(i) for i in logts]
 
 
@@ -191,10 +187,9 @@ def wks_energy_generator(min_eval, max_eval, time_points, padding=7, shrink=1):
     #    print "Warning: too much shrink. - Will be set manually."
     #    emax = emin + 0.05 * emin
 
-    delta = (logmax - logmin) / (time_points + 2 * padding)
+    delta = (logmax - logmin) / (time_points + 2 * padding - 1) #minus 1 is to ensure we reach emax (emax = logmax - sigma)
     sigma = padding * delta
     emin = logmin + sigma
-    emin = logmax - sigma     # BUG?
     res = [emin + i * delta for i in range(time_points)]
     return res, sigma
 
