@@ -86,10 +86,17 @@ def heat_kernel_embedding(lb, n_eigs, n_time):
     return heat_kernel_signature(evals, evecs.T, time_points)
 
 
-def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
-    ''' TODO-L: dirty single check that two versions are np.all_close(A,B).
-    Add some doc-string.
-    ''''
+def heat_kernel_signature(evals, evecs, time_horizon, verbose=False, old=False):
+    ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the heat kernel signature at each time point within the time_horizon.
+    
+    input dimensions:
+        evecs = (n_vecs, n_vertices)
+        evals = (n_vecs,)
+        time_horizon = [n_timepoints]
+
+    output dimensions = (n_vertices,n_timepoints)
+    '''
+
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
     if verbose:
@@ -99,17 +106,29 @@ def heat_kernel_signature(evals, evecs, time_horizon, verbose=False):
     e = np.e
     signatures = np.empty((n, len(time_horizon)))
     squared_evecs = np.square(evecs)
-#    squared_evecs = np.transpose(squared_evecs)
+    
+    if old:
+        print 'using legacy'
+        squared_evecs = np.transpose(squared_evecs)
+        for t, tp in enumerate(time_horizon):
+            interm = np.exp(-tp * evals)
+            for i in xrange(n):
+                signatures[i, t] = np.dot(interm, squared_evecs[i])
+    else:
+        for t, tp in enumerate(time_horizon):
+            interm = np.exp(-tp * evals)
+            signatures[:,t] = np.matmul(interm,squared_evecs)
 
-    for t, tp in enumerate(time_horizon):
-        interm = np.exp(-tp * evals)
-        signatures[:,t] = np.matmul(interm,squared_evecs)
-        #for i in xrange(n):
-        #    signatures[i, t] = np.dot(interm, squared_evecs[i])
     return signatures
 
 
 def hks_time_sample_generator(min_eval, max_eval, time_points):
+    '''
+    returns sampled time intervals to be passed into heat_kernel_signature().
+
+    output dimensions = [time_points]
+    '''
+    
     if max_eval <= min_eval or min_eval <= 0:
         raise ValueError('Two non-negative and sorted eigen-values are expected as input.')
 
@@ -125,86 +144,81 @@ def hks_time_sample_generator(min_eval, max_eval, time_points):
     return [math.exp(i) for i in logts]
 
 
-def wave_kernel_signature(evals, evecs, energies, sigma=1, verbose=False):
+def wave_kernel_signature(evals, evecs, energies, sigma=1,old=False):
+    ''' given eigenbasis of mesh's Laplace Beltrami operator, returns the wave kernel signature at each time point within the time_horizon.
+    
+    input dimensions:
+        evecs = (n_vecs, n_vertices)
+        evals = (n_vecs,)
+        energies = [n_timepoints]
+    output dimensions = (n_vertices,n_timepoints)
+    '''
+    
     if len(evals) != evecs.shape[0]:
         raise ValueError('Eigenvectors must have dimension = #eigen-vectors x nodes.')
-    if verbose:
-        print "Computing Wave Kernel Signature with %d eigen-pairs." % (len(evals),)
 
     n = evecs.shape[1]  # Number of nodes.
     signatures = np.empty((n, len(energies)))
     squared_evecs = np.square(evecs)
-    log_evals=np.log(evals)
     
-    var = 2 * (sigma**2)
-    for t, en in enumerate(energies):
-        interm = np.exp(-(en-log_evals)**2/var)
-        norm_factor = np.sum(interm)
-        if norm_factor == 0:
-            signatures=signatures[:,:t]
-            break
-        signatures[:,t] = np.matmul(interm,squared_evecs) / norm_factor
-
-    #e = math.exp(1)
-    #log = np.log
-    #signatures = np.empty((n, len(energies)))
-
-    #squared_evecs = np.square(evecs)
-    #squared_evecs = np.transpose(squared_evecs)
-    #sigma = 2 * (sigma**2)
-    #for t, en in enumerate(energies):
-    #    interm = e ** (-1 * (((en - log(evals))**2) / sigma))
-    #    norm_factor = 1 / np.sum(interm)
-        #for i in xrange(n):
-        #    signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
-
+    if old:
+        e = math.exp(1)
+        log = np.log
+        signatures = np.empty((n, len(energies)))
+        squared_evecs = np.transpose(squared_evecs)
+        sigma = 2 * (sigma**2)
+        for t, en in enumerate(energies):
+            interm = e ** (-1 * (((en - log(evals))**2) / sigma))
+            norm_factor = 1 / np.sum(interm)
+            for i in xrange(n):
+                signatures[i, t] = np.dot(interm, squared_evecs[i]) * norm_factor
+    else:
+        log_evals=np.log(evals)
+        var = 2 * (sigma**2)
+        for t, en in enumerate(energies):
+            interm = np.exp(-(en-log_evals)**2/var)
+            norm_factor = 1 / np.sum(interm)
+            signatures[:,t] = np.matmul(interm,squared_evecs) * norm_factor
+    
     assert(np.alltrue(signatures >= 0))
     return signatures
 
 
-def wks_energy_generator(min_eval, max_eval, time_points, width=1, padding=10, shrink=1):
-    '''TODO-L: add-doc-string brief descriptions.
-    + make one by combining with below. 
+def wks_energy_generator(min_eval, max_eval, time_points, padding=7, shrink=1):
     '''
-    emin = math.log(min_eval)
-    if shrink != 1:
-        emax = math.log(max_eval) / float(shrink)
-    else:
-        emax = math.log(max_eval)
+    returns sampled energy intervals to be passed into wave_kernel_signature().
 
-    if emax <= emin:
-        print "Warning: too much shrink. - Will be set manually."
-        emax = emin + 0.05 * emin
+    output dimensions = [time_points]
 
-    delta = (emax - emin) /  (time_points + width* )
-    sigma = 10 * delta
+    parameters from original paper:
+      emin= e_1+2*sigma
+      emax= e_n-2*sigma
+      delta= (emax-emin)/num_timepoints
+      sigma= 7*delta
 
-    res = [emin]
-    for _ in xrange(1, time_points):
-        res.append(res[-1] + delta)
-    assert(utils.is_increasing(res))
-    return res, sigma
+    '''
 
-
-def wks_energy_generator_aubry(min_eval, max_eval, time_points):
-    #parameters from original paper
-    #  emin= e_1+2*sigma
-    #  emax= e_n-2*sigma
-    # delta= (emax-emin)/M
-    # sigma= 7*delta
-
-    width = 1
     if min_eval == 0:
         raise ValueError('minimum eigenvalue must not be zero.')
-    delta = (math.log(max_eval) - math.log(min_eval)) / (time_points+width*14)
+
+    logmin = math.log(min_eval)
+    logmax = math.log(max_eval)
+    logmax = shrink*logmax + (1-shrink)*logmin
     
-    sigma = 7 * delta
-    emin = math.log(min_eval) + width * sigma
-    emax = math.log(max_eval) - width * sigma
-    res = [emin+i*delta for i in range(time_points)]
+    #if shrink != 1:
+    #    emax = math.log(max_eval) / float(shrink)
+    #else:
+    #    emax = math.log(max_eval)
+    #if emax <= emin:
+    #    print "Warning: too much shrink. - Will be set manually."
+    #    emax = emin + 0.05 * emin
+
+    delta = (logmax - logmin) / (time_points + 2*padding)
+    sigma = padding * delta
+    emin = logmin + sigma
+    emin = logmax - sigma
+    res = [emin+i*delta for i in range(time_points)] 
     return res, sigma
-
-
 
 
 def merge_component_spectra(in_mesh, in_lb, percent_of_eigs, merger=np.sum):
