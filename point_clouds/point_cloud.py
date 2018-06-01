@@ -193,7 +193,6 @@ class Point_Cloud(object):
             _, g2 = self.center_axis(axis=2)
             return self, [g0, g1, g2]
         else:
-
             r_max = np.max(self.points[:, axis])
             r_min = np.min(self.points[:, axis])
             gap = (r_max + r_min) / 2.0
