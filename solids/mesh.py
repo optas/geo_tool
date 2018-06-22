@@ -375,7 +375,9 @@ class Mesh(object):
 
         # If normals are computed, returns Nx6 matrices where last 3 are the normals.
         if compute_normals:
-            nV = self.normals_of_vertices(normalize=True)
+            nV = self.normals_of_vertices(normalize=True)            
+            #nV = self.normals_of_triangles(self.vertices, self.triangles, normalize=True)
+            
             nA = nV[self.triangles[sample_face_idx, 0], :]
             nB = nV[self.triangles[sample_face_idx, 1], :]
             nC = nV[self.triangles[sample_face_idx, 2], :]
