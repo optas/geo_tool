@@ -8,7 +8,7 @@ import numpy as np
 from . point_cloud import Point_Cloud
 
 
-def pclouds_with_zero_mean_in_unit_sphere(in_pclouds):
+def zero_mean_in_unit_sphere(in_pclouds):
     ''' Zero MEAN + Max_dist = 0.5
     '''
     pclouds = in_pclouds.copy()
@@ -19,7 +19,7 @@ def pclouds_with_zero_mean_in_unit_sphere(in_pclouds):
     return pclouds
 
 
-def center_pclouds_in_unit_sphere(pclouds):
+def center_in_unit_sphere(pclouds):
     for i, pc in enumerate(pclouds):
         pc, _ = Point_Cloud(pc).center_axis()
         pclouds[i] = pc.points
