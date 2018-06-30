@@ -9,8 +9,9 @@ from sklearn.neighbors import NearestNeighbors
 from scipy.sparse.linalg import eigs
 from numpy.linalg import norm
 
-from ..fundamentals import Graph
-from ..utils.linalg_utils import l2_norm
+from .. fundamentals import Graph
+from .. utils.linalg_utils import l2_norm
+from . point_cloud import Point_Cloud
 
 
 def greedy_match_pc_to_pc(from_pc, to_pc):
@@ -68,3 +69,32 @@ def unit_cube_grid_point_cloud(resolution, clip_sphere=False):
         grid = grid[norm(grid, axis=1) <= 0.5]
 
     return grid, spacing
+
+
+def pclouds_with_zero_mean_in_unit_sphere(in_pclouds):
+    ''' Zero MEAN + Max_dist = 0.5
+    '''
+    pclouds = in_pclouds.copy()
+    pclouds = pclouds - np.expand_dims(np.mean(pclouds, axis=1), 1)
+    dist = np.max(np.sqrt(np.sum(pclouds ** 2, axis=2)), 1)
+    dist = np.expand_dims(np.expand_dims(dist, 1), 2)
+    pclouds = pclouds / (dist * 2.0)
+    return pclouds
+
+
+def center_pclouds_in_unit_sphere(pclouds):
+    for i, pc in enumerate(pclouds):
+        pc, _ = Point_Cloud(pc).center_axis()
+        pclouds[i] = pc.points
+
+    dist = np.max(np.sqrt(np.sum(pclouds ** 2, axis=2)), 1)
+    dist = np.expand_dims(np.expand_dims(dist, 1), 2)
+    pclouds = pclouds / (dist * 2.0)
+
+    for i, pc in enumerate(pclouds):
+        pc, _ = Point_Cloud(pc).center_axis()
+        pclouds[i] = pc.points
+
+    dist = np.max(np.sqrt(np.sum(pclouds ** 2, axis=2)), 1)
+    assert(np.all(abs(dist - 0.5) < 0.0001))
+    return pclouds
