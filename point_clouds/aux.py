@@ -12,8 +12,6 @@ from numpy.linalg import norm
 from .. fundamentals import Graph
 from .. utils.linalg_utils import l2_norm
 
-
-
 def greedy_match_pc_to_pc(from_pc, to_pc):
     '''map from_pc points to to_pc by minimizing the from-to-to euclidean distance.'''
     nn = NearestNeighbors(n_neighbors=1).fit(to_pc)
