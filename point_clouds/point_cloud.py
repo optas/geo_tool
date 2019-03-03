@@ -215,19 +215,24 @@ class Point_Cloud(object):
         return np.all(abs(np.max(self.points, 0) + np.min(self.points, 0)) < epsilon)
 
     @staticmethod
-    def center_points(points, epsilon=10e-5, center='unit_sphere'):
+    def center_points(points, epsilon=10e-5, center='unit_sphere', force_scaling=False):
+        ''' It will center the points to be symmetricaly places around the (0,0,0). It will also apply uniform scaling according to `center` and `force_scaling`.
+        Input:
+            center: 'unit_sphere' or 'unit_cube'
+            force_scaling: boolean, if True, then even if the points are already inside the unit sphere/cube it will stretch them so that the (maximum) anti-diametric points lie exactly on the boundary.
+        '''
         pc = Point_Cloud(points)
 
         if not pc.is_centered_in_origin(epsilon=epsilon):
             pc.center_axis()
 
         if center == 'unit_sphere':
-            if not pc.is_in_unit_sphere(epsilon=epsilon):
+            if not pc.is_in_unit_sphere(epsilon=epsilon) or force_scaling:
                 max_dist = np.max(l2_norm(points, axis=1))  # Make max distance equal to one.
                 pc.points /= (max_dist * 2.0)
 
         elif center == 'unit_cube':
-            if not pc.is_in_unit_cube(epsilon=epsilon):
+            if not pc.is_in_unit_cube(epsilon=epsilon) or force_scaling:
                 cb = Cuboid.bounding_box_of_3d_points(pc.points)
                 max_dist = cb.diagonal_length()
                 pc.points /= max_dist
