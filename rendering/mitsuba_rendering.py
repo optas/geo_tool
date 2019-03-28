@@ -40,8 +40,8 @@ class Mitsuba_Rendering(object):
         shutil.copy(os.path.join(dependencies_dir, 'matpreview.serialized'), self.temp_dir)
 
     def set_default_rendering_params(self):
-        self.sphere_radius = 0.015          		# Size of rendered sphere (of point-clouds).
-        self.ldsampler_n_samples = 128		        # Controls the quality of the rendering, higher is better.
+        self.sphere_radius = 0.015          # Size of rendered sphere (of point-clouds).
+        self.ldsampler_n_samples = 128      # Controls the quality of the rendering, higher is better.
 
         self.z_rot_degrees = 0                      # Rotate object along z-axis before render it.
 
