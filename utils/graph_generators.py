@@ -53,7 +53,7 @@ def gnm_random_graph(n, m, seed=None, directed=False):
     if not directed:
         max_edges /= 2.0
     if m >= max_edges:
-        raise ValueError('Too many edjes.')
+        raise ValueError('Too many edges.')
 
     nlist = np.arange(n)
     edge_count = 0
