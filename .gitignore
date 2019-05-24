@@ -5,3 +5,4 @@
 *.pyc
 *.swp
 external_code/python_plyfile/build/
+.idea/*
