@@ -1,3 +1,5 @@
+__author__ = "Panos Achlioptas, Lin Shao, 2017."
+
 import os
 import numpy as np
 import shutil
@@ -9,7 +11,7 @@ from geo_tool import Point_Cloud
 
 from general_tools.in_out import create_dir
 from general_tools.strings import trim_content_after_last_dot
-from general_tools.plotting import rgb_to_hex_string
+from general_tools.plotting.colors import rgb_to_hex_string
 
 
 class Mitsuba_Rendering(object):
