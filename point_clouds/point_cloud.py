@@ -242,7 +242,13 @@ class Point_Cloud(object):
         return pc.points
 
     @staticmethod
-    def plot_3d_point_cloud(x, y, z, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8, figsize=(5, 5), elev=10, azim=240, axis=None, title=None, *args, **kwargs):
+    def plot_3d_point_cloud(x, y, z, show=True, show_axis=True, in_u_sphere=False, marker='.', s=8, alpha=.8,
+                            figsize=(5, 5), elev=10, azim=240, axis=None, title=None, *args, **kwargs):
+        """ Plot a 3d point-cloud via matplotlib.
+        :param x: iterable of N floats, representing the x-coordinates of a 3D pointcloud
+        :param y: iterable of N floats, representing the y-coordinates of a 3D pointcloud
+        :param z: iterable of N floats, representing the z-coordinates of a 3D pointcloud
+        """
 
         if axis is None:
             fig = plt.figure(figsize=figsize)
