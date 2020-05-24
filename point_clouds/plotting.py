@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 try:
     from mayavi import mlab as mayalab
 except:
-    print 'mayavi not installed.'
+    print('mayavi not installed.')
 
 from mpl_toolkits.mplot3d import Axes3D
 
