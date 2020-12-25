@@ -12,6 +12,7 @@ import re
 import numpy as np
 from glob import glob
 from .. external_code.python_plyfile.plyfile import PlyElement, PlyData
+
 try:
     import cv2
 except:
@@ -118,10 +119,10 @@ def load_wavefront_obj(file_name, vdtype=np.float32, tdtype=np.int32):
                 continue
 
             if values[0] == 'v':
-                v = map(vdtype, values[1:4])
+                v = list(map(vdtype, values[1:4]))
                 vertices.append(v)
             elif values[0] == 'vn':
-                v = map(vdtype, values[1:4])
+                v = list(map(vdtype, values[1:4]))
                 normals.append(v)
             elif values[0] == 'f':
                 face = []
