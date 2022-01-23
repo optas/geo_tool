@@ -67,3 +67,36 @@ def unit_cube_grid_point_cloud(resolution, clip_sphere=False):
         grid = grid[norm(grid, axis=1) <= 0.5]
 
     return grid, spacing
+
+
+def point_cloud_to_volume(points, vsize, radius=1.0):
+    """ input is Nx3 points.
+        output is vsize*vsize*vsize
+        assumes points are in range [-radius, radius]
+    Original from https://github.com/daerduoCarey/partnet_seg_exps/blob/master/exps/utils/pc_util.py
+    """
+    vol = np.zeros((vsize,vsize,vsize))
+    voxel = 2*radius/float(vsize)
+    locations = (points + radius)/voxel
+    locations = locations.astype(int)
+    vol[locations[:, 0], locations[:, 1], locations[:, 2]] = 1.0
+    return vol
+
+
+def volume_to_point_cloud(vol):
+    """ vol is occupancy grid (value = 0 or 1) of size vsize*vsize*vsize
+        return Nx3 numpy array.
+    Original from Original from https://github.com/daerduoCarey/partnet_seg_exps/blob/master/exps/utils/pc_util.py
+    """
+    vsize = vol.shape[0]
+    assert(vol.shape[1] == vsize and vol.shape[1] == vsize)
+    points = []
+    for a in range(vsize):
+        for b in range(vsize):
+            for c in range(vsize):
+                if vol[a,b,c] == 1:
+                    points.append(np.array([a, b, c]))
+    if len(points) == 0:
+        return np.zeros((0, 3))
+    points = np.vstack(points)
+    return points
